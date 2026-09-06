@@ -1,0 +1,59 @@
+start 2026-09-06T15:06:16Z
+rm -f results.xml
+"make" -f Makefile results.xml
+make[1]: Entering directory '/home/moein/projects/lithos/designs/ttsky26c-arm16/test_gl'
+mkdir -p sim_build/gl
+/home/moein/oss-cad-suite/bin/iverilog -o sim_build/gl/sim.vvp -s tb -g2012 -DGL_TEST -DFUNCTIONAL -DUSE_POWER_PINS -DSIM -DUNIT_DELAY=#1 -I/home/moein/projects/lithos/designs/ttsky26c-arm16/test_gl/../src -f sim_build/gl/cmds.f  /home/moein/.ciel/ciel/sky130/versions/8afc8346a57fe1ab7934ba5a6056ea8b43078e71/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v /home/moein/.ciel/ciel/sky130/versions/8afc8346a57fe1ab7934ba5a6056ea8b43078e71/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v /home/moein/projects/lithos/designs/ttsky26c-arm16/test_gl/gate_level_netlist.v /home/moein/projects/lithos/designs/ttsky26c-arm16/test_gl/tb.v
+rm -f results.xml
+COCOTB_TEST_MODULES=test COCOTB_TESTCASE= COCOTB_TEST_FILTER=test_delay_sweep COCOTB_TOPLEVEL=tb TOPLEVEL_LANG=verilog \
+         /home/moein/oss-cad-suite/bin/vvp -M /home/moein/oss-cad-suite/lib/python3.11/site-packages/cocotb-2.1.0.dev0+41564633-py3.11-linux-x64.egg/cocotb/libs -m libcocotbvpi_icarus   sim_build/gl/sim.vvp -fst   
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:216  in gpi_load_users                  Running entry func 'initialize' from loaded library '/home/moein/oss-cad-suite/lib/python3.11/site-packages/cocotb-2.1.0.dev0+41564633-py3.11-linux-x64.egg/cocotb/libs/libcocotb.so'
+     -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:96   in initialize                      Using Python 3.11.6 interpreter at /home/moein/oss-cad-suite/bin/tabbypy3
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 14.0 (devel)
+     0.00ns INFO     cocotb                             Seeding Python random module with 1788707178
+     0.00ns INFO     cocotb                             Initialized cocotb v2.1.0.dev0+41564633 from /home/moein/oss-cad-suite/lib/python3.11/site-packages/cocotb-2.1.0.dev0+41564633-py3.11-linux-x64.egg/cocotb
+     0.00ns INFO     cocotb                             Running tests
+     0.00ns INFO     cocotb.regression                  running test.test_delay_sweep (1/1)
+                                                            Mux round trip 0 to 40 ns against straps 1, 2, 3: at least two straps pass through 30 ns.
+   320.00ns WARNING  py.warnings                        /home/moein/projects/lithos/designs/ttsky26c-arm16/test_gl/qspi_models.py:102: DeprecationWarning: Use `signal.value_change` instead.
+                                                          await Edge(self.dut.sd_out)
+   320.00ns WARNING  py.warnings                        /home/moein/projects/lithos/designs/ttsky26c-arm16/test_gl/qspi_models.py:309: DeprecationWarning: Use `signal.value_change` instead.
+                                                          await First(Edge(self.dut.cs_flash_n), Edge(self.dut.cs_ram_n))
+   320.00ns WARNING  py.warnings                        /home/moein/projects/lithos/designs/ttsky26c-arm16/test_gl/qspi_models.py:320: DeprecationWarning: Use `signal.value_change` instead.
+                                                          await Edge(self.dut.sd_out)
+   381.00ns WARNING  py.warnings                        /home/moein/projects/lithos/designs/ttsky26c-arm16/test_gl/qspi_models.py:196: DeprecationWarning: Use `signal.value_change` instead.
+                                                          trig = await First(Edge(self.dut.sd_out), Edge(self.dut.sd_oe), Timer(5, unit="ns"))
+2204720.00ns INFO     cocotb.tb                          round trip 0 ns strap 3: 
+4409440.00ns INFO     cocotb.tb                          round trip 5 ns strap 3: 
+6614160.00ns INFO     cocotb.tb                          round trip 10 ns strap 3: 
+8614480.00ns INFO     cocotb.tb                          round trip 15 ns strap 1: 
+10717320.00ns INFO     cocotb.tb                          round trip 15 ns strap 3: 
+12717640.00ns INFO     cocotb.tb                          round trip 20 ns strap 1: 
+14923640.00ns INFO     cocotb.tb                          round trip 25 ns strap 1: 
+17129640.00ns INFO     cocotb.tb                          round trip 30 ns strap 1: 
+19335640.00ns INFO     cocotb.tb                          round trip 35 ns strap 1: 
+21541640.00ns INFO     cocotb.tb                          round trip 40 ns strap 1: 
+21747280.00ns INFO     cocotb.tb                          delay sweep:
+                                                        rt  0 ns: strap1=ok  strap2=ok  strap3=BAD
+                                                        rt  5 ns: strap1=ok  strap2=ok  strap3=BAD
+                                                        rt 10 ns: strap1=ok  strap2=ok  strap3=BAD
+                                                        rt 15 ns: strap1=BAD strap2=ok  strap3=BAD
+                                                        rt 20 ns: strap1=BAD strap2=ok  strap3=ok 
+                                                        rt 25 ns: strap1=BAD strap2=ok  strap3=ok 
+                                                        rt 30 ns: strap1=BAD strap2=ok  strap3=ok 
+                                                        rt 35 ns: strap1=BAD strap2=ok  strap3=ok 
+                                                        rt 40 ns: strap1=BAD strap2=ok  strap3=ok 
+21747280.00ns INFO     cocotb.regression                  test.test_delay_sweep passed
+21747280.00ns INFO     cocotb.regression                  **************************************************************************************
+                                                        ** TEST                          STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        **************************************************************************************
+                                                        ** test.test_delay_sweep          PASS    21747280.00         523.70      41525.99  **
+                                                        **************************************************************************************
+                                                        ** TESTS=1 PASS=1 FAIL=0 SKIP=0           21747280.00         523.72      41524.87  **
+                                                        **************************************************************************************
+FST info: dumpfile tb.fst opened for output.
+make[1]: *** [/home/moein/oss-cad-suite/lib/python3.11/site-packages/cocotb-2.1.0.dev0+41564633-py3.11-linux-x64.egg/cocotb_tools/makefiles/simulators/Makefile.icarus:66: results.xml] Segmentation fault (core dumped)
+make[1]: *** Deleting file 'results.xml'
+make[1]: Leaving directory '/home/moein/projects/lithos/designs/ttsky26c-arm16/test_gl'
+make: *** [/home/moein/oss-cad-suite/lib/python3.11/site-packages/cocotb-2.1.0.dev0+41564633-py3.11-linux-x64.egg/cocotb_tools/makefiles/Makefile.inc:17: sim] Error 2
+exit=2 end 2026-09-06T15:15:03Z

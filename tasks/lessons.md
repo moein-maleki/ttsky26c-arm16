@@ -46,3 +46,20 @@ Carried from the lab repository and the earlier TinyTapeout designs; only what i
   ports are named `clk`, `rst` or `rst_n`.
 - `check_signoff.py` gates setup, hold, DRC, LVS and antenna; it does not gate the STA design-rule counts
   (max slew, fanout, cap). Read them from `metrics.json` and decide.
+
+## Gate level and the push, 2026-09-06
+
+- A cocotb model must read every control pin through a resolver that returns None on X or Z. At gate level a
+  BAD strap setting carries the models' X window into a chip select; `int()` on the X raises inside the
+  model's coroutine, cocotb 2 cancels the test in the ReadOnly phase, and the cleanup write then raises the
+  phase error that hides the cause. Record the X as a protocol error and let `check()` fail.
+- The STA design-rule counts at signoff come from the routed `fanoutN` buffer trees at the ss corner and from
+  CTS leaf buffers over the fanout limit; the SDC is not the cause (the stock SDC gave the same counts).
+  Raising the repair-design margins to 50% on a 75% design does not converge (34 GB after nine minutes).
+  Decide on the counts from `checks.rpt`; do not expect a config knob to remove them.
+- Icarus 14 with the cocotb 2.1 development build segfaults at teardown after the summary table, so make
+  deletes `results.xml` in every local run; the summary table is the local verdict. The CI's own
+  `results.xml` is the only one that exists.
+- Docker cannot see the session scratchpad under the sandboxed `/tmp`; a clone for an isolated harden must
+  live under the home directory.
+- `tt/precheck` needs `gdstk` and a native `magic`; neither is installed, so the CI precheck job is the gate.

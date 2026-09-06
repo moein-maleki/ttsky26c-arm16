@@ -4,7 +4,7 @@
 set -euo pipefail
 repo=/home/moein/projects/lithos/designs/ttsky26c-arm16
 sprint=$repo/scratch_pad/2026-09-06_sep/02_rtl_sprint
-out=${DIALECT_OUT:-/tmp/claude-1000/-home-moein-projects-lithos/73559d18-d5d6-448b-bcf2-89f0d63c3f51/scratchpad/dialect}
+out=${DIALECT_OUT:-/tmp/arm16-work/dialect}
 mkdir -p "$out"
 stamp=$(date -u +%Y%m%dT%H%M%SZ)
 cp "$sprint/rewrite-plan.json" "$out/rewrite-plan.json"

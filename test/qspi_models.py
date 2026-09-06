@@ -22,6 +22,17 @@ T_CPH_NS = 18.0
 T_CEM_NS = 8000.0
 
 
+def resolved(signal):
+    """The signal as an int, or None when it is not resolvable. The gate-level netlist can carry an X
+    from the lanes' X window into a control pin in a strap setting the delay sweep expects to fail; the
+    models record that as a protocol error instead of raising inside a coroutine, which would cancel
+    the test in the ReadOnly phase."""
+    try:
+        return int(signal.value)
+    except ValueError:
+        return None
+
+
 class QspiBus:
     """Composes uio_in from the chip that drives the lanes (only one chip is ever selected)."""
 
@@ -42,12 +53,6 @@ class QspiBus:
 
     def release(self):
         self.dut.uio_in.value = 0
-
-    def sd_out(self):
-        return int(self.dut.sd_out.value)
-
-    def sd_oe(self):
-        return int(self.dut.sd_oe.value)
 
 
 class ChipModel:
@@ -106,7 +111,11 @@ class ChipModel:
             t_low = get_sim_time("ns")
             if self.last_cs_rise_ns is not None and t_low - self.last_cs_rise_ns < self.min_cs_high_ns():
                 self.error("chip select re-selected after %.1f ns, minimum %.1f" % (t_low - self.last_cs_rise_ns, self.min_cs_high_ns()))
-            if int(self.dut.qspi_sck.value) != 0:
+            sck = resolved(self.dut.qspi_sck)
+            if sck is None:
+                self._abandon(0, "SCK at the chip select fall")
+                continue
+            if sck != 0:
                 self.error("chip select fell while SCK was high")
             self.selected = True
             self.transactions += 1
@@ -127,13 +136,20 @@ class ChipModel:
         while True:
             trig = await First(RisingEdge(self.dut.qspi_sck), FallingEdge(self.dut.qspi_sck), RisingEdge(self.cs))
             now = get_sim_time("ns")
-            if trig is RisingEdge(self.cs) or int(self.cs.value) == 1:
+            cs = resolved(self.cs)
+            sck = resolved(self.dut.qspi_sck)
+            if cs is None or sck is None:
+                self._abandon(period, "chip select or SCK")
+                return
+            if trig is RisingEdge(self.cs) or cs == 1:
                 break
-            sck = int(self.dut.qspi_sck.value)
             if sck == 1:
                 # the chip samples the lanes on the rising edge: setup and hold checks, then decode
-                sd = self.bus.sd_out()
-                oe = self.bus.sd_oe()
+                sd = resolved(self.dut.sd_out)
+                oe = resolved(self.dut.sd_oe)
+                if sd is None or oe is None:
+                    self._abandon(period, "the lanes or the lane enable")
+                    return
                 if self.sd_last_change_ns is not None and now - self.sd_last_change_ns < 5.0 and oe:
                     self.error("data changed %.1f ns before the SCK rising edge of period %d" % (now - self.sd_last_change_ns, period))
                 if period < 8:
@@ -192,13 +208,22 @@ class ChipModel:
         self.cs_low_max_ns = max(self.cs_low_max_ns, t_high - t_low)
         if t_high - t_low > self.max_cs_low_ns():
             self.error("chip select low for %.0f ns, maximum %.0f" % (t_high - t_low, self.max_cs_low_ns()))
-        if int(self.dut.qspi_sck.value) != 0:
+        sck = resolved(self.dut.qspi_sck)
+        if sck is None:
+            self.error("SCK unresolvable when the chip select rose")
+        elif sck != 0:
             self.error("chip select rose while SCK was high")
         self.selected = False
         cocotb.start_soon(self._release_after(self.round_trip / 2 + 7.0))
 
     def max_cs_low_ns(self):
         return 1e12
+
+    def _abandon(self, period, what):
+        """Stop decoding: a control pin is X or Z. The error fails check(); the lanes go idle."""
+        self.error("%s unresolvable in period %d at %.0f ns" % (what, period, get_sim_time("ns")))
+        self.selected = False
+        self.bus.release()
 
     async def _drive_nibble(self, address, nib_index, t_fall):
         """Drive X then the nibble on the lanes, delayed by the round trip; only while selected."""
@@ -283,12 +308,19 @@ class BusMonitor:
         while True:
             await First(Edge(self.dut.cs_flash_n), Edge(self.dut.cs_ram_n))
             await ReadOnly()
-            if int(self.dut.cs_flash_n.value) == 0 and int(self.dut.cs_ram_n.value) == 0:
+            flash_n = resolved(self.dut.cs_flash_n)
+            ram_n = resolved(self.dut.cs_ram_n)
+            if flash_n is None or ram_n is None:
+                self.errors.append("a chip select is unresolvable at %.0f ns" % get_sim_time("ns"))
+            elif flash_n == 0 and ram_n == 0:
                 self.errors.append("both chip selects low at %.0f ns" % get_sim_time("ns"))
 
     async def _hold(self):
         while True:
             await Edge(self.dut.sd_out)
             await ReadOnly()
-            if int(self.dut.sd_oe.value) == 0:
+            oe = resolved(self.dut.sd_oe)
+            if oe is None:
+                self.errors.append("the lane enable is unresolvable at %.0f ns" % get_sim_time("ns"))
+            elif oe == 0:
                 self.errors.append("data lanes changed while not driven at %.0f ns" % get_sim_time("ns"))

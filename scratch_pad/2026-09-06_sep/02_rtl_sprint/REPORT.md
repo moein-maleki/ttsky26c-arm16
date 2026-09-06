@@ -15,8 +15,8 @@
 | 4 engine, models, bus tests | done; RTL suite green after review 2: 51 of 52 pass in the test-ROM build (the plain-build test skips there), 14 of 14 runnable in the plain build | `reviews/codex_review_2.md`, run logs in the session scratchpad |
 | 5 UART, docs | UART cut (D13); docs v0.4 and info.md written | |
 | 6 harden | done three times, signoff clean; run 3 is on commit `a9bdd86` | `evidence/harden_20260906T101958Z` is the netlist to replay and push |
-| 7 gate level | first replay on the run-2 netlist: stream, restart, interleave, literal load, negative test pass; the random and band tests hit the review-2 test defects; rerun pending on the run-3 netlist | `evidence/gl_run1.log` |
-| 8 precheck, reviews | Codex reviews 1 and 2 applied | `reviews/` |
+| 7 gate level | done: on the run-3 netlist 11 of the 11 runnable tests pass (replay 2: 10 pass, the delay sweep failed on a harness gap; replay 3 after the X-safe models: the sweep passes with the predicted table) | `evidence/gate_level_run2_netlist3.log`, `evidence/gate_level_run3_netlist3_delay_sweep.log` |
+| 8 precheck, reviews | Codex reviews 1 and 2 applied; the local precheck cannot run (no `gdstk`, no `magic` outside Docker), so the CI precheck job is the gate; the STA design-rule counts are dispositioned below | `reviews/` |
 | 9 push, CI | pending | |
 
 ## Findings so far
@@ -82,7 +82,62 @@ Not done before the pause: the gate-level replay on the run-3 netlist (`scripts/
 
 The replay must be repeated on the run-3 netlist with the fixed tests (`scripts/run_gate_level.sh`).
 
-## State at the pause (2026-09-06, sprint hour 3)
+## Gate-level replays 2 and 3 (Task 7, the run-3 netlist, 2026-09-06 15:00 to 15:15 UTC)
+
+Replay 2 (`evidence/gate_level_run2_netlist3.log`, 14 minutes): 52 tests, 41 skipped (RTL-only), 10 passed,
+1 failed. The failure was `test_delay_sweep`, and its cause is in the harness, not the RTL. In a strap and
+round-trip setting that the table already calls BAD (15 ns with strap 1), the models' X window passes through
+the netlist to a chip select. The bus monitor's `int()` raised on the X inside its coroutine, cocotb 2
+cancelled the test in the ReadOnly phase, and the cleanup write of `uio_in` then raised the phase error that the
+log reports. At RTL the same setting gives a deterministic wrong value, because an `if` on X takes the else
+branch, so the monitor never saw an X there.
+
+Fix (`test/qspi_models.py`): every control-pin read goes through `resolved()`, which returns None on an X or
+Z; a model then records a protocol error and releases the lanes (`_abandon`), and the monitor records the
+unresolvable select. `check()` already fails on model and monitor errors, and the sweep already treats a
+failing strap as a data point, so a BAD setting stays BAD without a crash. The two unused bus accessors went.
+
+Replay 3, the sweep alone on the same netlist (`evidence/gate_level_run3_netlist3_delay_sweep.log`,
+9 minutes): PASS, with exactly the predicted table (strap 1 to 10 ns, strap 2 everywhere, strap 3 from
+20 ns). The RTL suite on the fixed models: 51 pass, 1 skip, the same table
+(`evidence/rtl_suite_after_x_safe_models.summary.log`). Result: 11 of the 11 runnable gate-level tests pass
+on the run-3 netlist of commit `a9bdd86`.
+
+The local simulator (Icarus 14 with the cocotb 2.1 development build) exits with a segmentation fault at
+teardown in every run, RTL and gate level, after cocotb prints the summary table; make then deletes
+`results.xml`. The summary table is the local verdict. The CI runs Icarus 12 with cocotb 2.0.1 and reads its
+own `results.xml`; whether it shows the same teardown fault is known only from the CI run.
+
+## STA design-rule counts: disposition (the Task 6 open item)
+
+Where the counts come from (run 3, `runs/wokwi/55-openroad-stapostpnr/max_ss_100C_1v60/checks.rpt`):
+
+- The limits are the PDK's (`sky130_fd_sc_hd/config.tcl`): max transition 0.75 ns, max fanout 10, max
+  capacitance 0.2 pF. Run 1 with LibreLane's stock SDC already had 1,793 / 25 / 20, so `arm16.sdc` is not the
+  cause.
+- Max slew (1,969 at max_ss, 364 at nom_tt): the loads of the `fanoutN` buffers that repair_design inserted
+  after global placement (fanout116 at 2.31 ns, fanout87 at 1.98 ns, fanout89 at 1.80 ns, fanout294 and
+  fanout274 at 1.7 ns, each with about ten sinks). After placement repair the nominal corner was clean (step
+  36: 0 slew violations); the routed parasitics and the ss library bring them back (step 43 after global
+  routing: 22; after detailed routing and extraction: 364 at nom_tt, 1,969 at max_ss).
+- Max fanout (27): 25 are CTS leaf clock buffers with 11 to 16 sinks (`clkbuf_leaf_*`, `clkbuf_0_clk`), 2 are
+  data fanout buffers with 11 and 12 sinks.
+- Max capacitance (21): 20 are `fanoutN` buffers (buf_1) whose routed load exceeds their 0.081 pF limit by
+  up to 0.045 pF; 1 is the clock root buffer at 0.209 pF against 0.2.
+
+Experiment A (`evidence/harden_expA_slew_cap_margin50_repairdesign.log`): `DESIGN_REPAIR_MAX_SLEW_PCT` and
+`DESIGN_REPAIR_MAX_CAP_PCT` raised from 20 to 50 in an isolated clone. The repair-design step, which takes
+seconds at the default, was still iterating after nine minutes (3,468 nets remaining at iteration 500), with
+the container at 100% CPU and 34 GB of memory; killed. Not adoptable: a step of that size cannot run on the
+CI runner, and the calendar does not allow a second attempt with a gate-level rerun.
+
+Decision: push run 3 as it is. Setup and hold are met with the actual slews at all nine corners (setup
++6.87 ns, hold +0.108 ns), the counts are not gated by the TinyTapeout precheck, the clock-tree fanout items
+are CTS's own leaf buffers, and a slow edge on a mux select at 25 MHz costs delay that STA already includes.
+Recorded for v2: fewer high-fanout selects in the RTL (register-file read addresses, the freeze net), or a
+post-route repair when LibreLane offers a stable one.
+
+## State before the push (2026-09-06, 15:20 UTC)
 
 - RTL suite green: 51 pass, 1 skip (test-ROM build) plus 14 pass (plain build with the shipped ROM);
   44 pytest. The delay sweep reproduces the predicted strap table exactly; 200 ROM-mode and 40 flash-fed
@@ -91,6 +146,8 @@ The replay must be repeated on the run-3 netlist with the fixed tests (`scripts/
 - Harden 3 on commit `a9bdd86`: signoff clean, 74.99%, setup +6.87 ns, hold +0.108 ns (snapshot
   `evidence/harden_20260906T101958Z`). The test fixes after it touch only `test/`, so the RTL of that
   snapshot is the final RTL.
-- Next session, in order: `bash scratch_pad/2026-09-06_sep/02_rtl_sprint/scripts/run_gate_level.sh` (the
-  run-3 netlist is in `runs/wokwi/final/pnl/`; about 30 minutes; band tests capture every eighth row),
-  then Task 9 (push, CI watch, artifact verification), then the portal submission.
+- Gate level: 11 of 11 runnable tests pass on the run-3 netlist (replays 2 and 3 above); the RTL suite on the
+  X-safe models is 51 pass, 1 skip. The RTL of `a9bdd86` is unchanged; this commit changes `test/` and the
+  scratch_pad only, so the CI hardens the same RTL as run 3.
+- Next: Task 9 (create the repository, push, watch the `test`, `docs` and `gds` workflows, verify the
+  artifacts), then the portal submission (the user).

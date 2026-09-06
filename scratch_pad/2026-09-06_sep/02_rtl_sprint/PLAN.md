@@ -223,7 +223,7 @@ Never pass `-q` to yosys (the `stat` table disappears).
 #!/usr/bin/env bash
 set -euo pipefail
 repo=/home/moein/projects/lithos/designs/ttsky26c-arm16
-out=/tmp/claude-1000/-home-moein-projects-lithos/73559d18-d5d6-448b-bcf2-89f0d63c3f51/scratchpad/dialect
+out=/tmp/arm16-work/dialect
 mkdir -p "$out"; stamp=$(date -u +%Y%m%dT%H%M%SZ)
 cp "$repo/scratch_pad/2026-09-06_sep/02_rtl_sprint/rewrite-plan.json" "$out/rewrite-plan.json"
 /usr/bin/python3 /home/moein/.agents/skills/verilog-rewrite/scripts/check_dialect.py \
@@ -357,7 +357,7 @@ grep GPL-0019 runs/wokwi/28-openroad-globalplacement/openroad-globalplacement.lo
 
 ## Task 7: Gate-level simulation
 
-- [~] **Step 1:**  (done once on the run-2 netlist; pending on the run-3 netlist)
+- [x] **Step 1:** done on the run-3 netlist (2026-09-06 15:00 UTC): 10 of 11 runnable tests passed; the delay sweep failed on a harness gap (X on a chip select in a BAD strap setting crashed the bus monitor); after the X-safe models the sweep passes with the predicted table, and the RTL suite stays at 51 pass, 1 skip
 
 ```bash
 source ~/oss-cad-suite/environment
@@ -367,12 +367,12 @@ cd test && GATES=yes make -B 2>&1 | tee ../scratch_pad/2026-09-06_sep/02_rtl_spr
 ```
 
 The suite already samples every DUT output 20 ns after the rising edge (mid-cycle at the 40 ns period), the way logos did, so one driver serves RTL and gate level. The ROM-fed and hierarchy-poking tests skip under `GATES=yes`; the flash-fed tests, the sync-timing test, the digit-band frame test (D7), the UART tests, the delay sweep and the transaction-count test run. Expect the run to take tens of minutes; run it in the background with a Monitor on the log.
-- [ ] **Step 2:** `results.xml` shows zero failures; copy it to `evidence/`.
+- [x] **Step 2:** zero failures across replays 2 and 3 (`evidence/gate_level_run2_netlist3.log`, `evidence/gate_level_run3_netlist3_delay_sweep.log`). `results.xml` is not written locally: Icarus 14 with the cocotb 2.1 development build segfaults at teardown after the summary table, in every run; the summary table is the local verdict.
 
 ## Task 8: Precheck, review 4, metrics
 
-- [ ] **Step 1:** `tt/precheck` needs the TT KLayout build; if `python tt/precheck/precheck.py --gds runs/wokwi/final/gds/tt_um_moein_maleki_arm16.gds` runs in the `~/.venvs/tt-tools` environment, record its result; otherwise the CI precheck job is the gate. Codex review 4 (read-only) on `scratch_pad/.../evidence/harden_*/metrics.json`, `summary.rpt`, `src/config.json`, `src/arm16.sdc`, and `test/test.py` against spec section 14: what is unverified, what a silicon bring-up could hit.
-- [ ] **Step 2: Commit** `git commit -m "Gate-level suite green on the hardened netlist; precheck and review evidence"`.
+- [x] **Step 1:** the local precheck cannot run (`~/.venvs/tt-tools` has no `gdstk`; no `magic` outside Docker): the CI precheck job is the gate. The STA design-rule counts are dispositioned in `REPORT.md` (fanout buffer trees at the ss corner and CTS leaf buffers; experiment A with 50% repair margins did not converge and was killed at 34 GB; run 3 is pushed as it is). Codex review 4 (read-only) on `scratch_pad/.../evidence/harden_*/metrics.json`, `summary.rpt`, `src/config.json`, `src/arm16.sdc`, and `test/test.py` against spec section 14: what is unverified, what a silicon bring-up could hit.
+- [x] **Step 2: Commit** the gate-level result, the X-safe models and the dispositions (the commit after `0bb9427`). Codex review 4 stays open as the P3 task.
 
 ## Task 9: Push and CI watch
 
@@ -511,3 +511,12 @@ Task 7: one replay on the run-2 netlist (`evidence/gate_level_run1_netlist2.log`
 defects since fixed); the replay on the run-3 netlist is the next action. Task 8: reviews 1 and 2 applied
 (`reviews/`); local precheck not run. Tasks 9 and 10: pending. Decisions D10 to D13 added. Next:
 `bash scripts/run_gate_level.sh`, then Task 9. See `REPORT.md`.
+
+### 2026-09-06 (15:00 to 15:20 UTC) — Task 7 done, Task 8 dispositioned, Task 9 next
+Gate-level replay 2 on the run-3 netlist: 10 of 11 runnable tests pass, the delay sweep fails on a harness
+gap (an X on a chip select in a BAD strap setting crashes the bus monitor, cocotb cancels the test in the
+ReadOnly phase, the cleanup write raises). `test/qspi_models.py` made X-safe (`resolved()`, `_abandon()`);
+replay 3 of the sweep passes with the predicted table; the RTL suite stays at 51 pass, 1 skip. STA design-rule
+counts traced to the routed `fanoutN` buffer trees at the ss corner and the CTS leaf buffers; experiment A
+(repair margins 50%) did not converge (34 GB, killed at nine minutes); run 3 pushed as it is. Local precheck
+not runnable; the CI precheck is the gate. Next: Task 9. See `REPORT.md`.

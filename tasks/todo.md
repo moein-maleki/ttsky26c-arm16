@@ -1,6 +1,6 @@
 # ttsky26c-arm16 tasks
 
-> **File:** `tasks/todo.md`. **Last regenerated:** 2026-09-06 (RTL sprint paused after Codex review 2: RTL, tests, docs done; two local hardens signoff clean; CI push next). **Open tasks:** 5. **Priority:** P1 highest, P4 parking.
+> **File:** `tasks/todo.md`. **Last regenerated:** 2026-09-06 (gate level green on the run-3 netlist after the X-safe models; STA counts dispositioned; the push and the CI watch next). **Open tasks:** 4. **Priority:** P1 highest, P4 parking.
 > Session history lives in the project journal; the board is `tasks/STATE.md`.
 
 ## Constraints
@@ -13,18 +13,13 @@
 
 ## Open tasks
 
-#### P1 · 2026-09-07 · Confirm the suite and the gate-level replay on the final netlist, then push and watch the CI
-RTL suite: `cd test && make -B` (ROMTEST default, about 15 minutes; 46 tests). Gate level:
-`bash scratch_pad/2026-09-06_sep/02_rtl_sprint/scripts/run_gate_level.sh` on the run-3 netlist (30 to 60
-minutes; the band tests capture every eighth row at gate level). Then `gh repo create moein-maleki/ttsky26c-arm16 --public`,
-`git push -u origin main`, watch the `test`, `docs` and `gds` workflows (`gh run watch`), download the
-artifacts and run `scripts/verify_ci_artifacts.sh`. Plan Task 9 in `scratch_pad/2026-09-06_sep/02_rtl_sprint/PLAN.md`.
-
-#### P2 · 2026-09-07 · Signoff STA design-rule counts
-Harden run 2 reported 1,778 max-slew, 22 max-fanout and 15 max-cap violations on mux select nets (setup and
-hold are met; the precheck does not gate them). Try `DESIGN_REPAIR_MAX_SLEW_PCT`, `DESIGN_REPAIR_MAX_FANOUT`
-or `RUN_POST_GRT_DESIGN_REPAIR` in `src/config.json`, or buffer the freeze and register-address nets, and
-compare with `evidence/harden_*/metrics.json`. Codex review 2, finding 1.
+#### P1 · 2026-09-07 · Push and watch the CI, verify the artifacts
+The suite and the gate-level replay on the run-3 netlist are green (51 pass, 1 skip at RTL; 11 of 11 runnable
+tests at gate level). `gh repo create moein-maleki/ttsky26c-arm16 --public`, `git push -u origin main`, watch
+the `test`, `docs` and `gds` workflows (`gh run watch`), download the artifacts and run
+`scripts/verify_ci_artifacts.sh`. Watch for the local simulator's teardown segfault on the CI's Icarus 12 and
+cocotb 2.0.1: the `test` job fails on a missing `results.xml`. Plan Task 9 in
+`scratch_pad/2026-09-06_sep/02_rtl_sprint/PLAN.md`.
 
 #### P2 · 2026-09-07 · Submit the 2x2 on the portal after the CI is green
 The user's action (app.tinytapeout.com). The report names the commit to select. Order one QSPI Pmod and one
@@ -41,6 +36,12 @@ Same RTL, golden model, tests and programs as v1. Track decision first. **Sky130
 ## Completed
 
 ### RTL sprint (2026-09-06)
+- [x] Gate level on the run-3 netlist: 11 of 11 runnable tests pass after the memory models became X-safe (an X
+      on a chip select in a BAD strap setting had crashed the bus monitor); the delay sweep reproduces the
+      predicted table at RTL and at gate level.
+- [x] STA design-rule counts dispositioned: the loads of the routed fanout buffer trees at the ss corner and the
+      CTS leaf buffers; the 50% repair-margin experiment did not converge (34 GB, killed); run 3 pushed as it is.
+      `scratch_pad/2026-09-06_sep/02_rtl_sprint/REPORT.md`.
 - [x] Software testbench: encoder, image builder, dump epilogue, reference decoder, golden model (44 pytest).
 - [x] RTL in the verilog-rewrite dialect: top, controller, datapath, ten units, demo ROM; dialect checker 0 errors.
 - [x] ROM-mode cocotb suite: directed per class, five lab regressions, 200 random programs both stall

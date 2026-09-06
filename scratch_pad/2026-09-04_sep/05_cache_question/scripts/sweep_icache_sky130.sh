@@ -1,7 +1,7 @@
 #!/bin/bash
 source ~/oss-cad-suite/environment
 LIB=~/.ciel/ciel/sky130/versions/8afc8346a57fe1ab7934ba5a6056ea8b43078e71/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
-cd /tmp/claude-1000/-home-moein-projects-lithos/45618f98-0c5d-4cee-a336-ef0268fa0754/scratchpad/icache
+cd /tmp/arm16-work/icache
 printf "%-10s %-6s %-6s %-12s %-12s %-8s\n" lines cells flops synth_um2 placed_um2 tile_pct
 for cfg in "4 2" "8 3" "16 4" "32 5" "64 6"; do
   set -- $cfg
