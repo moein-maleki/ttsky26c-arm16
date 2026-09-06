@@ -68,3 +68,9 @@
 
 Measure, do not estimate. Every artifact under `scratch_pad/<date>/<xx>_<feature>/`. No push without the
 user. No AI attribution anywhere.
+
+### 2026-09-06 progress
+Checklist extended twice: the UART and peripheral items (2026-09-05, after the serial-debug request and the
+VGA decision) and the eleven RTL rules from the architecture exploration (2026-09-06). Nothing executed yet;
+this checklist is the RTL task's contract. Order of work: `../../2026-09-06_sep/01_architecture_exploration/REPORT.md`
+section 7 and `docs/spec.md` section 11.

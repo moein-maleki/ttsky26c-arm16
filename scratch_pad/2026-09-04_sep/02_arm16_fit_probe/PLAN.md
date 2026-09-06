@@ -45,3 +45,9 @@
 Measure, do not estimate: three architectural predictions were wrong this week until synthesized. Every
 session artifact goes under `scratch_pad/<date>/<xx>_<feature>/` with PLAN, REPORT, INFRA_AND_COMMANDS,
 evidence and scripts. No push without the user. No AI attribution.
+
+### 2026-09-06 progress
+Superseded. The shuttle and repository decisions are taken (TTSKY26c, `designs/ttsky26c-arm16`), the memory
+is decided (`03_memory_options`), and the checklist above now lives in `tasks/todo.md` and `docs/spec.md`
+v0.3. The probe RTL in `rtl/` remains the starting point for the RTL task and carries the defects listed in
+`04_spec/REPORT.md` and `03_memory_options/REPORT.md`.

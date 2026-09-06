@@ -11,5 +11,11 @@
       timing, performance, the "works" list, tools, bring-up, decisions, open questions.
 - [x] Write `info.yaml` with the pinout, `README.md`, `tasks/`.
 - [x] Add the UART to the memory checklist (`03_memory_options/PLAN.md`) and to the tasks.
-- [ ] User reviews sections 17 and 18 of the spec.
+- [x] User reviewed the spec through two revisions: v0.2 (TinyVGA replaces the digit, 2026-09-05) and v0.3
+      (stall policy, ROM above UART, 2026-09-06). Section 18's open items (install binutils, order the two
+      Pmods) moved to `tasks/todo.md`.
 - [ ] Then: RTL per the spec and the checklist, synthesizing after every block.
+
+### 2026-09-06 progress
+Spec v0.3 is the agreed gate; RTL may start. Superseding plan for execution: `03_memory_options/PLAN.md`
+(the RTL checklist) and section 9 of the architecture exploration report (the order of work).
