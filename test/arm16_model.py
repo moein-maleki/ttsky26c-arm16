@@ -150,7 +150,8 @@ class Arm16Model:
         word = self.fetch(self.pc)
         d = decode(word)
         d["pc"] = self.pc
-        self.retired += 1
+        if d["valid"]:
+            self.retired += 1          # a word with condition 1111 is a bubble, never an instruction
         next_pc = (self.pc + 4) & MASK
         if d["valid"] and condition_met(d["cond"], self.n, self.z, self.c, self.v) and d["cls"] != "nop":
             next_pc = self._execute(d, next_pc)
