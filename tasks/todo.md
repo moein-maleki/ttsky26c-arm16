@@ -1,6 +1,6 @@
 # ttsky26c-arm16 tasks
 
-> **File:** `tasks/todo.md`. **Created:** 2026-09-04 (repository scaffolded from the TinyTapeout template; spec written for review). **Open tasks:** 8. **Priority:** P1 highest, P4 parking.
+> **File:** `tasks/todo.md`. **Created:** 2026-09-04 (repository scaffolded from the TinyTapeout template; spec written for review). **Open tasks:** 9. **Priority:** P1 highest, P4 parking.
 > Session history lives in the project journal; the board is `tasks/STATE.md`.
 
 ## Constraints
@@ -37,6 +37,9 @@ Create the GitHub repository, push, confirm test, docs and GDS workflows green, 
 #### P3 · 2026-09-07 · Order one QSPI Pmod; write the process post
 store.tinytapeout.com, 20 EUR. Bring-up notes are in spec section 15 and 16.
 
+#### P4 · parked · arm16 v2 with a real instruction cache on an IHP shuttle
+Same RTL, golden model, tests and programs; add `RM_IHPSG13_1P_512x16` (45,309 um^2) as a direct-mapped 128-instruction cache with tags in the same macro, 3-cycle hit, a cache-enable switch, on a 3x2 IHP tile (core 65,780 um^2 on SG13G2). ttihp26b was full on 2026-09-05 (0 of 240); wait for the next IHP shuttle. Integration pattern: `urish/ttihp-sram-test` config. Findings: `scratch_pad/2026-09-04_sep/05_cache_question/REPORT.md`.
+
 ## Completed
 
 ### Scaffold and specification (2026-09-04)
@@ -44,6 +47,9 @@ store.tinytapeout.com, 20 EUR. Bring-up notes are in spec section 15 and 16.
 - [x] Lab work promoted: the five defect fixes with regressions, the fit probe, the memory research (`scratch_pad/PROVENANCE.md`).
 - [x] Decoder audit for the spec: three encoding quirks (branch offset unshifted from PC+4, direction bit ignored, BL without link), N and V read bit 31 of a 16-bit result, C computed from signed operands. `scratch_pad/2026-09-04_sep/04_spec/REPORT.md`.
 - [x] `docs/spec.md` v0.1 and `info.yaml` pinout written.
+
+### Cache question (2026-09-05)
+- [x] Measured: flop caches of 4 to 64 lines on sky130 (14% to 204% of the tile); the core on SG13G2 (65,780 um^2, 2.01x sky130); IHP macro sizes from the PDK LEFs; TT rules and prior art researched. No cache on sky130; cache is the IHP v2. `scratch_pad/2026-09-04_sep/05_cache_question/REPORT.md`.
 
 ## Review
 

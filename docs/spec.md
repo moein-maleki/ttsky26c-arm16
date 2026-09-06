@@ -124,7 +124,7 @@ A switch selects what the digit shows.
 
 | Feature | Why it is out |
 |---|---|
-| Cache | 9,664 flip-flops in the lab design; the tile holds about 1,500 in total |
+| Cache | sky130 has no SRAM macro; a flop cache of 4 lines costs 14% of the tile and 128 instructions about 400% (measured, `scratch_pad/2026-09-04_sep/05_cache_question/`). Planned as arm16 v2 on a later IHP shuttle with the SG13G2 512x16 single-port macro on a 3x2 tile |
 | 32-bit datapath | the 32-bit register file alone exceeds the tile budget |
 | Thumb or any 16-bit encoding | a scope change against the agreed brief; noted as future work |
 | Multiply, LDM/STM, byte loads and stores, halfword forms, SWP, MRS/MSR, SWI, coprocessor | not in the lab core; each adds decode and test surface with no demo value |
