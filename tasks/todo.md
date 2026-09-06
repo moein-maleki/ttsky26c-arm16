@@ -17,7 +17,7 @@
 `docs/spec.md` v0.1. The six decisions in section 17 change the RTL; the three questions in section 18 need the user. No RTL before this is agreed.
 
 #### P1 · 2026-09-05 · Write the RTL to the spec
-Core from the probe RTL with every narrowed width audited; ARM-standard branch, load/store direction, BL, r15 semantics; ALU flags rewritten; streaming QSPI controller from `tinyQV/cpu/qspi_flash.v` with the sampling delay and falling-edge SCK; peripheral decode, the VGA timing generator and four-digit renderer, SW, hardware view, UART. Checklist: `scratch_pad/2026-09-04_sep/03_memory_options/PLAN.md`. Synthesize after each block; stay under 72%.
+Core from the probe RTL with every narrowed width audited; the drain stall policy with a valid/ready fetch and 0b1111 bubbles; ARM-standard branch, load/store direction, BL, r15 semantics; ALU flags rewritten; streaming QSPI controller from `tinyQV/cpu/qspi_flash.v` with the sampling delay and falling-edge SCK; peripheral decode, the VGA timing generator and four-digit renderer, SW, hardware view, the internal ROM isolated from the controller, then UART, then the meter. Checklist: `scratch_pad/2026-09-04_sep/03_memory_options/PLAN.md`. Synthesize after each block; stay under 72%.
 
 #### P1 · 2026-09-05 · Golden model, assembler, memory models
 Python ARM-subset simulator from the ARM definition; Python encoder for the subset (cross-check against `arm-none-eabi-as` when installed); cocotb models of the W25Q128JV and APS6404L from the datasheets in `scratch_pad/2026-09-04_sep/03_memory_options/evidence/`.
@@ -37,8 +37,8 @@ Create the GitHub repository, push, confirm test, docs and GDS workflows green, 
 #### P3 · 2026-09-07 · Order one QSPI Pmod; write the process post
 store.tinytapeout.com, 20 EUR. Bring-up notes are in spec section 15 and 16.
 
-#### P4 · parked · arm16 v2 with a real instruction cache on an IHP shuttle
-Same RTL, golden model, tests and programs; add `RM_IHPSG13_1P_512x16` (45,309 um^2) as a direct-mapped 128-instruction cache with tags in the same macro, 3-cycle hit, a cache-enable switch, on a 3x2 IHP tile (core 65,780 um^2 on SG13G2). ttihp26b was full on 2026-09-05 (0 of 240); wait for the next IHP shuttle. Integration pattern: `urish/ttihp-sram-test` config. Findings: `scratch_pad/2026-09-04_sep/05_cache_question/REPORT.md`.
+#### P4 · parked · arm16 v2, two tracks (architecture exploration 2026-09-06)
+Same RTL, golden model, tests and programs as v1. Track decision first. **Sky130 (TTSKY26d):** drain, self-armed continuous read with the FFh mode reset, PSRAM QPI, a strappable memory-clock ratio (1:1 with a fallback to 1:2), the retired-per-frame meter, and a ROM macro holding a 64 to 128 instruction demo program at one instruction per cycle; about 73 to 77% on a 2x2 or 47% on a 3x2. **IHP (next shuttle):** the 512x16 SRAM macro as a 128-instruction cache with a 3-cycle hit on a 3x2, continuous read, a strappable ratio. Dry runs before any RTL: a 30-line tile hardened with the forwarded clock and its generated-clock constraint; a dummy 2x2 with a generated ROM macro (TinyTapeout/sky130-rom-experiments, smunaut/tt08-rom-test) hardened and its contents extracted from the GDS; mode-aware flash and PSRAM models with a warm-reset test. Parked lower: the branch-target cache (3.5% for 11%), the latch loop buffer, the emulator data channel (needs an RP2350 firmware port), tnt's register-file macro (license). Findings: `scratch_pad/2026-09-06_sep/01_architecture_exploration/REPORT.md`.
 
 ## Completed
 
@@ -48,6 +48,9 @@ Same RTL, golden model, tests and programs; add `RM_IHPSG13_1P_512x16` (45,309 u
 - [x] Decoder audit for the spec: three encoding quirks (branch offset unshifted from PC+4, direction bit ignored, BL without link), N and V read bit 31 of a 16-bit result, C computed from signed operands. `scratch_pad/2026-09-04_sep/04_spec/REPORT.md`.
 - [x] `docs/spec.md` v0.1 and `info.yaml` pinout written.
 - [x] 2026-09-05: spec v0.2, the TinyVGA Pmod replaces the seven-segment digit (measured 5.2%), UART behind the mode switch, clock fixed at 25 MHz.
+
+### Architecture exploration (2026-09-06)
+- [x] Forwarding and branch handling analysed with a cycle model: drain policy mandatory (30% on loops and loads); forwarding is decoration on the streamed path (0.9% of the tile) and worth 40 to 80% in ROM mode; branch prediction not worth a gate. Parallel memory needs pins the VGA holds and unported firmware. Latch caches 6 to 12% for 4 to 8 instructions. tnt's register file: dense, proven, 22% of the tile, license unresolved. A ROM macro is the one structure that runs a program at one instruction per cycle. Spec v0.3. `scratch_pad/2026-09-06_sep/01_architecture_exploration/REPORT.md`.
 
 ### Cache question (2026-09-05)
 - [x] Measured: flop caches of 4 to 64 lines on sky130 (14% to 204% of the tile); the core on SG13G2 (65,780 um^2, 2.01x sky130); IHP macro sizes from the PDK LEFs; TT rules and prior art researched. No cache on sky130; cache is the IHP v2. `scratch_pad/2026-09-04_sep/05_cache_question/REPORT.md`.

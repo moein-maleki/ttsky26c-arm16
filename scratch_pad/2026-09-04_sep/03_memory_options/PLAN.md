@@ -43,6 +43,27 @@
       violation assertion, tCPH), written from the datasheets in `evidence/`.
 - [ ] Order one QSPI Pmod from store.tinytapeout.com.
 
+## RTL rules from the architecture exploration (2026-09-06)
+
+- [ ] Fetch interface valid/ready with backpressure; the controller holds a delivered word until accepted;
+      the fetch address advances exactly once per accepted word (the probe pulses ready and re-requests).
+- [ ] A data access or a redirect aborts the fetch in flight (chip select high, partial word discarded); the
+      fetch address register is the single source of truth for the restart. Never wait for the in-flight word.
+- [ ] Bubble = condition 0b1111 or a valid bit. Never an all-zero word (it decodes as ANDEQ r0, r0, r0 with
+      a write enable).
+- [ ] FWD_EN, QSPI_DLY and BOOT_ROM latched while reset is active; none is combinationally live.
+- [ ] One reset style everywhere, from the synchronized reset; the register file keeps no reset and no
+      simulation-only initial block.
+- [ ] The memory stage's lab leftover (subtract 1024, drop address bit 0) replaced by the spec's address map.
+- [ ] ROM-mode isolation: with BOOT_ROM = 1 the QSPI controller is idle, chip selects high, SCK low, data
+      pins as inputs; the hardware view does not depend on the controller.
+- [ ] X-containment: no control signal (write enable, peripheral select, branch, flag update) depends on
+      unreset register data unless a decoded control bit already qualifies it.
+- [ ] Exactly one bus transaction per load or store; the memory model counts them against the golden model.
+- [ ] One deliberately failing negative test (an inverted carry) so the suite is known to see.
+- [ ] The controller advances on a tick with the clock ratio as a parameter (2 now) and an integer sampling
+      strap, so a 1:1 clock later is a controller-local change.
+
 ## Rules carried forward
 
 Measure, do not estimate. Every artifact under `scratch_pad/<date>/<xx>_<feature>/`. No push without the

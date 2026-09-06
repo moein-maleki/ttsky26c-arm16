@@ -1,7 +1,10 @@
 # arm16 design specification
 
-> Version 0.2, 2026-09-05. Status: for review, before any RTL is written. Change from 0.1: the TinyVGA
-> Pmod replaces the seven-segment digit, the UART sits behind the mode switch, the clock is fixed at 25 MHz.
+> Version 0.3, 2026-09-06. Status: agreed, RTL may start. Change from 0.2: the stall policy is stated
+> (drain), the fetch interface is valid/ready, forwarding is documented as live only in ROM mode, the
+> internal ROM outranks the UART, the controller tick is parameterized, the counters become one meter.
+> Change from 0.1: the TinyVGA Pmod replaces the seven-segment digit, the UART sits behind the mode switch,
+> the clock is fixed at 25 MHz.
 > Target: TinyTapeout shuttle TTSKY26c, sky130A, one 2x2 tile, deadline 2026-09-07 20:00 UTC.
 > Author: Moein Maleki. Written in Simplified Technical English.
 
@@ -28,10 +31,10 @@ TinyTapeout. No pipelined CPU that fetches from external serial memory has been 
 | Registers | r0 to r14, 16 bits each; r15 is the program counter |
 | Program memory | 32 KB of the external QSPI flash, read-only, streamed |
 | Data memory | 32 KB of the external QSPI PSRAM |
-| Peripherals | VGA output of a 16-bit value as four large digits, switch input, UART, two counters |
+| Peripherals | VGA output of a 16-bit value as four large digits, switch input, UART, a retired-per-frame meter |
 | Core clock | 25 MHz, set by the demo board; it is also the VGA pixel clock, so it is fixed |
 | Memory clock | 12.5 MHz, half the core clock |
-| Expected speed | about one instruction per 16 to 24 core cycles in straight-line code |
+| Expected speed | 16 core cycles per instruction in straight-line code, about 34 on loop-heavy and 48 on load-heavy code (cycle model, section 13) |
 | Tile | 2x2, about 72,565 um^2 usable; target utilization at most 72% |
 
 ## 3. Features included
@@ -61,10 +64,23 @@ CMP and TST always update the flags. LDR, STR and B never update the flags.
 
 Five stages: fetch, decode, execute, memory, write-back. Forwarding from the memory and write-back stages
 into execute. Hazard detection stalls one cycle on a load-use dependency when forwarding is on, and stalls
-on every read-after-write dependency when forwarding is off. A switch selects forwarding on or off at run
-time, so the two behaviours can be compared on silicon. A taken branch is resolved in execute and removes
-the two younger instructions. There is no branch prediction and no delay slot. The register file and the
-status register write on the falling clock edge, as in the lab design.
+on every read-after-write dependency when forwarding is off. A switch, latched at reset, selects forwarding
+on or off, so the two behaviours can be compared on silicon. A taken branch is resolved in execute and
+removes the two younger instructions. There is no branch prediction and no delay slot. The register file
+and the status register write on the falling clock edge, as in the lab design.
+
+**Stall policy: drain.** When the fetch stage has no instruction ready it passes a bubble to decode and
+the older instructions continue. The pipeline holds only for a data access in the memory stage or a hazard
+stall. A taken branch or a write to r15 discards the fetch in flight and any buffered word before the
+restart. A bubble carries condition 0b1111 and never an all-zero word. The fetch interface is valid/ready
+with backpressure: the controller holds a delivered word until the pipeline accepts it, and the fetch
+address advances exactly once per accepted word.
+
+**Where forwarding is live.** Forwarding and the load-use stall act only when instructions enter execute
+on consecutive cycles, which happens in ROM mode. On the streamed path each instruction retires before the
+next is decoded, so FWD_EN changes nothing there. The cycle model (section 13) puts the drain policy 30%
+ahead of holding all stages on loop-heavy and load-heavy code; forwarding costs 64 cells, under 1% of the
+tile, and is kept for the ROM path where it is worth 40 to 80%.
 
 ### 3.3 Memory system
 
@@ -74,6 +90,9 @@ One QSPI controller serves instruction fetch and data access over the shared Pmo
   while the program counter advances in sequence. A sequential 32-bit instruction costs 8 memory clocks.
   A taken branch aborts the stream and restarts it at the target, which costs 20 memory clocks of setup.
 - The controller always has the next sequential instruction in flight. There is no larger buffer.
+- The controller advances on a memory-clock tick whose ratio to the core clock is a parameter, 2 in this
+  version, and it takes the sampling strap as an integer, so a 1:1 memory clock later is a change inside
+  the controller only.
 - A data access interrupts the instruction stream. The controller finishes the data access, then restarts
   the instruction stream at the current program counter.
 - Reads use command EBh in single-command, quad-address, quad-data form on both chips. Writes use command
@@ -96,8 +115,8 @@ Peripheral accesses take one cycle and do not touch the Pmod bus.
 | 0xFF04 | UART_DATA | read, write | write sends one byte; read returns the received byte and clears RX_VALID |
 | 0xFF06 | UART_STAT | read | bit 0 TX_BUSY, bit 1 RX_VALID, bit 2 RX_OVERRUN |
 | 0xFF08 | UART_DIV | read, write | core clocks per bit; reset value 217 gives 115,200 baud at 25 MHz |
-| 0xFF0A | CYCLES | read | free-running 16-bit core cycle counter (optional feature, see section 11) |
-| 0xFF0C | RETIRED | read | 16-bit count of instructions retired (optional feature) |
+| 0xFF0C | METER | read | instructions retired during the previous video frame, 16 bits, latched at vertical sync (optional feature, see section 11) |
+
 | 0xFF10 | VGA_FG | read, write | bits [5:0] foreground colour, two bits each of red, green and blue; reset white |
 | 0xFF12 | VGA_BG | read, write | bits [5:0] background colour; reset black |
 
@@ -116,9 +135,12 @@ byte. RX_OVERRUN is set when a byte arrives while RX_VALID is set; it clears whe
 ### 3.5 Internal demo ROM
 
 When the BOOT_ROM pin is high at reset, the processor fetches addresses 0x0000 to 0x003F from a 16-instruction
-ROM inside the chip instead of the flash. The ROM holds a program that counts on the screen through VGA_VAL and
-uses no external memory. It is the proof of life if the Pmod path fails on silicon. This feature is
-included only if it fits the area budget (section 11).
+ROM inside the chip instead of the flash. The ROM holds a program of about 15 instructions that counts on the screen through VGA_VAL: registers
+written before they are read, an eight-deep dependent chain in the loop so that the count rate changes
+about 2x with FWD_EN, no loads, and unused entries that branch to themselves. In ROM mode the QSPI
+controller is held idle with both chip selects high and the data pins as inputs, so a defective controller
+cannot affect this mode. It is the proof of life if the Pmod path fails on silicon and the only mode in
+which the pipeline runs at one instruction per cycle. It is a must-have (section 11).
 
 ### 3.6 Display views
 
@@ -126,7 +148,8 @@ A switch selects what the screen shows.
 
 - Program view: VGA_VAL in the program's colours.
 - Hardware view: the program counter as the four digits, white on black, and the background turns dark
-  blue while the QSPI bus is active. This view works even when the program is wrong.
+  blue while the QSPI bus is active. This view works even when the program is wrong. With USER high the
+  hardware view shows the meter instead of the program counter, if the meter is built.
 
 ## 4. Features excluded
 
@@ -146,7 +169,15 @@ A switch selects what the screen shows.
 | On-chip flash programming | the flasher tool writes the flash through the demo board |
 | Framebuffer, text mode, sprites | no memory for a frame on the tile; streaming pixels from the PSRAM would take the bus from instruction fetch for the whole visible frame |
 | The demo board's seven-segment digit | it shares the eight output pins with the VGA Pmod; its jumpers are cut |
-| Branch prediction, a second memory port, DTR reads | future work, none proven on TinyTapeout |
+| Branch prediction | the cost of a taken branch is the stream restart, which no predictor removes |
+| Self-armed continuous read | 14% on loop-heavy code in the model; needs an FFh mode reset after every chip reset because reset does not reset the flash; follow-on chip |
+| Memory clock equal to the core clock | 2x on everything in the model; at 25 MHz the return-data window admits exactly one sampling-strap setting, and the clock must be forwarded to a pad; follow-on chip with a strappable ratio |
+| Branch-target cache | one entry costs about 3.5% of the tile for 11% on loop-heavy code; follow-on chip |
+| Branch resolution in decode | under 2%; skipped |
+| Latch loop buffer | 6 to 12% of the tile for 4 to 8 instructions; no room beside the VGA and UART |
+| ROM macro holding a demo program | 1.51 bits per um^2, 256 instructions in 7.5% of the tile, runs at one instruction per cycle; toolchain not yet investigated; follow-on chip |
+| A parallel data path to the demo board's microcontroller | needs two outputs the VGA holds and firmware nobody has ported to the RP2350 board; follow-on chip |
+| A second memory port, DTR reads | none proven on TinyTapeout |
 
 ## 5. Changes from the lab core
 
@@ -201,14 +232,14 @@ socket.
 
 | Pin | Name | Function |
 |---|---|---|
-| ui_in[0] | FWD_EN | 1: forwarding on. 0: stall on every dependency. Read at any time. |
+| ui_in[0] | FWD_EN | 1: forwarding on. 0: stall on every dependency. Latched while reset is active. |
 | ui_in[1] | DISP_SEL | 0: program view. 1: hardware view. |
 | ui_in[2] | UART_EN | 1: video off, uo_out[4] is UART transmit. 0: video on. |
 | ui_in[3] | UART_RX | serial receive, idle high. TinyTapeout convention. |
 | ui_in[4] | QSPI_DLY0 | receive sampling delay, bit 0. Latched while reset is active. |
 | ui_in[5] | QSPI_DLY1 | receive sampling delay, bit 1. Latched while reset is active. |
 | ui_in[6] | BOOT_ROM | 1: fetch from the internal ROM. 0: fetch from the flash. Latched while reset is active. |
-| ui_in[7] | USER | free for the program; readable through SW. |
+| ui_in[7] | USER | free for the program; readable through SW. In hardware view, 1 shows the meter. |
 
 All eight pins are readable by the program through the SW register at any time.
 
@@ -273,7 +304,7 @@ A store to the flash range does nothing. A fetch from the PSRAM or peripheral ra
 | Proof of life, no memory Pmod | BOOT_ROM 1, DISP_SEL 0 | the ROM program counts on the screen |
 | Is it fetching? | DISP_SEL 1 | the screen shows the program counter; the background turns blue while the bus works |
 | Serial debug | UART_EN 1 | the program prints and reads over USB serial; the screen is blank |
-| Pipeline study | FWD_EN 0 or 1 | compare CYCLES and RETIRED over the same program |
+| Pipeline study | BOOT_ROM 1, FWD_EN 0 or 1 | the ROM program's count rate changes about 2x; the meter shows it. On flash programs FWD_EN has no visible effect |
 
 ## 10. Reset and boot
 
@@ -297,9 +328,9 @@ design is re-synthesized after each one. A feature that breaks the cap is droppe
 1. Must: the controller rewrite. It removes the duplicate instruction and shift registers found in the
    probe, worth about 5% of the tile, and it fixes the four probe defects.
 2. Must: the VGA timing generator and four-digit renderer, the peripheral decode, SW, the hardware view.
-3. Must: UART.
-4. Should: the internal demo ROM.
-5. Nice: CYCLES and RETIRED.
+3. Must: the internal demo ROM, isolated from the controller.
+4. Should: the UART, trimmed to transmit-only before it is cut.
+5. Nice: the retired-per-frame meter.
 
 ## 12. Clock and timing
 
@@ -318,11 +349,18 @@ design is re-synthesized after each one. A feature that breaks the cap is droppe
 
 | Case | Core cycles per instruction |
 |---|---|
-| Straight-line code, forwarding on | 16 to 24 |
+| Straight-line code | 16 |
 | Taken branch | about 56 |
 | LDR or STR to PSRAM | about 88 to 96 |
 | LDR from flash (literal pool) | about 104 |
 | Peripheral LDR or STR | as straight-line code |
+| ROM program, forwarding on | 1 |
+| ROM program, forwarding off | 1.6 to 1.8 |
+
+Cycle model on three workload mixes (fractions of taken branches, loads or stores, adjacent dependencies):
+16.0 straight-line (0, 0, 0.3), 33.5 loop-heavy (0.2, 0.1, 0.4), 47.5 load-heavy (0.1, 0.3, 0.4) core cycles
+per instruction under the drain policy. The silicon measurement calibrates the model
+(`scratch_pad/2026-09-06_sep/01_architecture_exploration/scripts/cycle_model.py`).
 
 At 25 MHz this is roughly 1 to 1.5 million instructions per second in loops, and enough to drive a display
 or a serial console. The pipeline is idle most of the time. That is a known and accepted property of a
@@ -342,7 +380,10 @@ The chip is done when every item below passes.
 4. cocotb tests pass at RTL: one directed test per instruction class with flag checks; the five lab
    regressions re-encoded; random programs compared against the golden model at the end of execution;
    UART loopback; the ROM boot; the hardware view; a VGA sync-timing check; a frame-capture test that renders one frame to
-   an image and compares it; the demo program drawing on the screen end to end.
+   an image and compares it; the demo program drawing on the screen end to end; the memory model counting
+   exactly one bus transaction per load or store against the golden model; the mux round trip swept 0 to
+   40 ns across the three strap settings with at least two settings passing to 30 ns; one deliberately
+   failing negative test so the suite is known to see.
 5. Hardening closes at 25 MHz with zero setup, hold, DRC, LVS and antenna failures across the nine corners,
    per the `ttsky26c-hardening-guardrails` note, and the metrics are snapshotted.
 6. The same cocotb tests pass on the powered gate-level netlist.
@@ -389,6 +430,11 @@ any is wrong.
 7. The TinyVGA Pmod replaces the seven-segment digit (2026-09-05). A hardware renderer draws VGA_VAL as
    four large digits; the core clock is fixed at 25 MHz as the pixel clock; the board's digit jumpers are
    cut. Measured at 5.2% of the tile.
+8. Architecture exploration (2026-09-06): the stall policy is drain with a valid/ready fetch and 0b1111
+   bubbles; forwarding is kept and is live only in ROM mode, FWD_EN latched at reset; the internal ROM
+   outranks the UART and is isolated from the controller; the controller tick ratio is a parameter; the
+   counters become one retired-per-frame meter. Continuous read, a 1:1 memory clock, a branch-target
+   cache, a ROM macro, a latch buffer and a parallel data path are parked for the follow-on chip.
 
 ## 18. Open questions for the user
 
