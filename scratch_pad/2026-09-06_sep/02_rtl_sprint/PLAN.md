@@ -385,7 +385,7 @@ The user's request authorizes creating the repository and pushing. The remote `o
 
 ## Task 10: Close
 
-- [~] `REPORT.md`, `INFRA_AND_COMMANDS.md` and the umbrella index row done (2026-09-06 16:20 UTC); the memory update and `/close` at the session end.
+- [x] `REPORT.md`, `INFRA_AND_COMMANDS.md`, the READMEs and the index row done; **submitted 2026-09-06 (about 21:00 UTC): `42ba458`, gds run 34044878215**; memory updated; `/close` at the session end.
 
 ---
 
@@ -529,3 +529,7 @@ GitHub Pages site. Fixes: the test renamed `test_negative_known_mismatch` (`2c54
 GitHub Actions source. Round 2 on `2c546d4`: test, docs and gds (gds, precheck 15 of 15, gl_test 11 of 11,
 viewer) all green; the artifact verifier passes; the CI metrics equal local run 3 in every field. Commit to
 submit: `2c546d4`, gds run 34042870023. See `REPORT.md`.
+
+### 2026-09-06 (about 21:00 UTC) — submitted
+The user submitted arm16 to Tiny Tapeout SKY 26c: 2x2, commit `42ba458`, gds run 34044878215 (the run whose
+artifacts the verifier passed). The sprint's goal is met; what remains is the bring-up in 2027.

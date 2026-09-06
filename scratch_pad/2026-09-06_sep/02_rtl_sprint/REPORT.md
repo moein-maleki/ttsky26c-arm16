@@ -17,7 +17,7 @@
 | 6 harden | done three times, signoff clean; run 3 is on commit `a9bdd86` | `evidence/harden_20260906T101958Z` is the netlist to replay and push |
 | 7 gate level | done: on the run-3 netlist 11 of the 11 runnable tests pass (replay 2: 10 pass, the delay sweep failed on a harness gap; replay 3 after the X-safe models: the sweep passes with the predicted table) | `evidence/gate_level_run2_netlist3.log`, `evidence/gate_level_run3_netlist3_delay_sweep.log` |
 | 8 precheck, reviews | Codex reviews 1 and 2 applied; the local precheck cannot run (no `gdstk`, no `magic` outside Docker), so the CI precheck job is the gate; the STA design-rule counts are dispositioned below | `reviews/` |
-| 9 push, CI | done: `2c546d4` is green on all three workflows (test 51 pass; docs; gds with precheck 15 of 15, gate level 11 of 11, viewer); artifacts verified; this is the commit to submit | `evidence/ci/run2_2c546d4_34042870023/`, the Task 9 section |
+| 9 push, CI | done and **submitted** 2026-09-06 (about 21:00 UTC, by the user): `42ba458`, gds run 34044878215, 2x2; all three workflows green on `2c546d4` and `42ba458`; artifacts verified | `evidence/ci/run2_2c546d4_34042870023/`, the Task 9 section |
 
 ## Findings so far
 
@@ -150,7 +150,8 @@ post-route repair when LibreLane offers a stable one.
   X-safe models is 51 pass, 1 skip. The RTL of `a9bdd86` is unchanged; this commit changes `test/` and the
   scratch_pad only, so the CI hardens the same RTL as run 3.
 - Pushed: `github.com/moein-maleki/ttsky26c-arm16`, `main` at `2c546d4`, all three workflows green, artifacts
-  verified. Next: the portal submission of `2c546d4` (the user), then the Pmods and the bring-up.
+  verified. Submitted 2026-09-06 (about 21:00 UTC): `42ba458`, run 34044878215. Next: the Pmods, the jumpers
+  and the bring-up when the chips arrive (projected 2027-03-27).
 
 ## Task 9: push and CI (2026-09-06)
 
@@ -167,7 +168,7 @@ classifier of the session blocked the push from the agent; the remote is SSH now
 | 34042870023 | gds | `2c546d4` | success: `gds` 11 minutes, `precheck` 15 of 15, `gl_test` 11 pass, 0 fail, 41 skip (25 minutes; the delay-sweep table matches), `viewer` deployed after Pages was enabled with the GitHub Actions source; artifact verifier PASS (`evidence/ci/run2_2c546d4_34042870023/`) |
 | 34044878183, 34044878214, 34044878215 | test, docs, gds | `42ba458` (this report and the CI evidence, no RTL change) | all success; `gl_test` 11 pass, 0 fail; metrics identical to run 34042870023; artifact verifier PASS (`evidence/ci/run3_42ba458_34044878215/`) |
 
-**Commit to submit: `2c546d4`, gds run 34042870023, or the head `42ba458`, gds run 34044878215; the GDS is the same** (`https://github.com/moein-maleki/ttsky26c-arm16/actions/runs/34042870023`).
+**Submitted 2026-09-06 (about 21:00 UTC): commit `42ba458`, gds run 34044878215, project arm16, 2x2, Tiny Tapeout SKY 26c.** The portal confirmed the submission; TinyTapeout reviews the pull request into the shuttle repository. (`2c546d4` with run 34042870023 carries the same GDS.) (`https://github.com/moein-maleki/ttsky26c-arm16/actions/runs/34042870023`).
 Both CI hardens (LibreLane 3.0.5 on the runner) reproduce local run 3 (LibreLane 3.0.3) in every metric:
 74.99% placed, 6,126 cells, setup +6.872 ns, hold +0.108 ns, DRC, LVS and antenna 0, and the same 1,969 / 27 / 21
 design-rule counts. The GDS viewer is at `https://moein-maleki.github.io/ttsky26c-arm16/`. Remaining for the

@@ -1,6 +1,6 @@
 # ttsky26c-arm16 tasks
 
-> **File:** `tasks/todo.md`. **Last regenerated:** 2026-09-06 (CI green on `2c546d4`: test, docs, gds with precheck 15 of 15 and gate level 11 of 11; the portal submission is next). **Open tasks:** 3. **Priority:** P1 highest, P4 parking.
+> **File:** `tasks/todo.md`. **Last regenerated:** 2026-09-06 (submitted to TTSKY26c on 2026-09-06: `42ba458`, gds run 34044878215; bring-up preparation is next). **Open tasks:** 3. **Priority:** P1 highest, P4 parking.
 > Session history lives in the project journal; the board is `tasks/STATE.md`.
 
 ## Constraints
@@ -13,14 +13,11 @@
 
 ## Open tasks
 
-#### P1 · 2026-09-07 · Submit the 2x2 on the portal: `2c546d4`, gds run 34042870023
-The user's action (app.tinytapeout.com, before 2026-09-07 20:00 UTC): repository
-`https://github.com/moein-maleki/ttsky26c-arm16`, commit `2c546d4`, the gds run
-`https://github.com/moein-maleki/ttsky26c-arm16/actions/runs/34042870023` (all three workflows green; the
-artifacts verified in `scratch_pad/2026-09-06_sep/02_rtl_sprint/evidence/ci/run2_2c546d4_34042870023/`). The
-docs-only head `42ba458` (gds run 34044878215) is green too with identical metrics; either commit is fine. Then order one
-QSPI Pmod and one TinyVGA Pmod (store.tinytapeout.com); cut jumpers JP2 to JP9 before the first run; set the
-flash quad-enable bit once at bring-up (spec 15).
+#### P2 · 2027-03-27 · Prepare the bring-up (chips projected 2027-03-27, kits about 2027-05-12)
+Order one QSPI flash and PSRAM Pmod and one TinyVGA Pmod (store.tinytapeout.com). Watch for the TinyTapeout
+pull request that merges the project into the shuttle repository. Cut jumpers JP2 to JP9 on the demo board
+before the first run; set the flash quad-enable bit once at bring-up (spec 15); the bring-up steps are in
+`docs/info.md` and spec section 15. The LinkedIn post before the boards arrive (the user's).
 
 #### P3 · 2026-09-07 · Codex review 3 on the final state
 Reviews 1 and 2 are applied (`scratch_pad/2026-09-06_sep/02_rtl_sprint/reviews/`). A third pass on the
@@ -32,6 +29,8 @@ Same RTL, golden model, tests and programs as v1. Track decision first. **Sky130
 ## Completed
 
 ### RTL sprint (2026-09-06)
+- [x] Submitted to Tiny Tapeout SKY 26c on 2026-09-06 (about 21:00 UTC, by the user): project arm16, 2x2, commit
+      `42ba458`, gds run 34044878215 (artifact verifier PASS, precheck 15 of 15, gate level 11 of 11).
 - [x] Pushed and CI green on `2c546d4`: test 51 pass, docs, gds with precheck 15 of 15, gate level 11 of 11 and the
       viewer; artifact verifier PASS on both gds runs; the CI metrics equal local run 3. Round 1 had failed on the
       template's `grep failure results.xml` matching a test name (renamed) and on the missing Pages site (enabled).
