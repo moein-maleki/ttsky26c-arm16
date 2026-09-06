@@ -3,7 +3,7 @@ project:
   title:        "arm16"
   author:       "Moein Maleki"
   discord:      ""
-  description:  "16-bit five-stage ARM pipeline with forwarding and hazard detection. Program in external QSPI flash, data in QSPI PSRAM, VGA output of four large digits, UART. First ARM core on Tiny Tapeout."
+  description:  "16-bit five-stage ARM pipeline with forwarding and hazard detection. Program streamed from the QSPI Pmod flash, data in its PSRAM, a 16-bit value shown as four large digits on the TinyVGA Pmod, an internal demo ROM. First ARM core on Tiny Tapeout."
   language:     "Verilog"
   clock_hz:     25000000
 

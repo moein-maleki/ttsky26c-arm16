@@ -75,7 +75,7 @@ class ChipModel:
         self.last_cs_rise_ns = None
         self.sd_last_change_ns = None
         self.selected = False
-        self._running = None
+        self._tasks = []
         self.write_event = Event()
         self.last_write = None
 
@@ -84,8 +84,13 @@ class ChipModel:
         self.dut._log.error("%s model: %s" % (self.name, text))
 
     def start(self):
-        self._running = cocotb.start_soon(self.run())
-        cocotb.start_soon(self._monitor_sd())
+        self._tasks = [cocotb.start_soon(self.run()), cocotb.start_soon(self._monitor_sd())]
+
+    def stop(self):
+        for t in self._tasks:
+            t.cancel()
+        self._tasks = []
+        self.selected = False
 
     async def _monitor_sd(self):
         while True:
@@ -155,7 +160,8 @@ class ChipModel:
                     mode = ((mode << 4) | sd) & 0xFF
                     if period == 15 and (mode & 0x30) == 0x20:
                         self.error("mode byte %02X arms continuous read" % mode)
-                elif not reading and period < 14 + self.write_nibbles_expected():
+                elif not reading and period >= 14:
+                    # linear burst: every clocked-in byte lands in memory (the real part keeps writing)
                     if oe != 0b1111:
                         self.error("write data period %d drives lanes %04b" % (period, oe))
                     write_nibbles.append(sd)
@@ -169,14 +175,16 @@ class ChipModel:
                 else:
                     if reading and oe != 0:
                         self.error("master drives lanes %04b during period %d of a read" % (oe, period))
-                await Timer(5, unit="ns")
-                if int(self.cs.value) == 0 and self.bus.sd_out() != sd and oe:
-                    self.error("data changed within 5 ns after the SCK rising edge of period %d" % period)
+                if oe:
+                    # hold: no edge on the data lanes or their enables for 5 ns after the SCK rising edge
+                    trig = await First(Edge(self.dut.sd_out), Edge(self.dut.sd_oe), Timer(5, unit="ns"))
+                    if not isinstance(trig, Timer):
+                        self.error("data or enable changed within 5 ns after the SCK rising edge of period %d" % period)
             else:
                 # falling edge of `period`: a read launches nibble (period - data_start + 1)
                 if reading and period >= data_start - 1:
                     nib_index = period - (data_start - 1)
-                    drive_tasks.append(cocotb.start_soon(self._drive_nibble(address, nib_index, now)))
+                    self._tasks.append(cocotb.start_soon(self._drive_nibble(address, nib_index, now)))
                 period += 1
         t_high = get_sim_time("ns")
         self.transaction_bytes.append(self.bytes_out - sum(self.transaction_bytes))
@@ -191,9 +199,6 @@ class ChipModel:
 
     def max_cs_low_ns(self):
         return 1e12
-
-    def write_nibbles_expected(self):
-        return 0
 
     async def _drive_nibble(self, address, nib_index, t_fall):
         """Drive X then the nibble on the lanes, delayed by the round trip; only while selected."""
@@ -247,9 +252,6 @@ class PsramModel(ChipModel):
             return False
         return None
 
-    def write_nibbles_expected(self):
-        return 4
-
     def min_cs_high_ns(self):
         return T_CPH_NS
 
@@ -267,10 +269,15 @@ class BusMonitor:
     def __init__(self, dut):
         self.dut = dut
         self.errors = []
+        self._tasks = []
 
     def start(self):
-        cocotb.start_soon(self._selects())
-        cocotb.start_soon(self._hold())
+        self._tasks = [cocotb.start_soon(self._selects()), cocotb.start_soon(self._hold())]
+
+    def stop(self):
+        for t in self._tasks:
+            t.cancel()
+        self._tasks = []
 
     async def _selects(self):
         while True:

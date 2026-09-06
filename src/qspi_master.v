@@ -5,7 +5,8 @@
 // receive sampler captures the four lanes `rx_delay_in` core clocks (1 to 3) after the tick that
 // launched the falling edge which clocks the nibble out of the chip (plan D9). A word of the stream
 // is only requested when the controller reports room for it (plan D4). The PSRAM chip select is
-// forced high after CS_LOW_MAX core clocks (6 us) and the fault is sticky.
+// forced high after CS_LOW_MAX core clocks (6 us, seen on the following edge: 6.04 us), SCK and the
+// lane enables drop with it, and the fault is sticky.
 `default_nettype none
 module qspi_master #(
     parameter TICK_RATIO = 2,
@@ -206,14 +207,19 @@ module qspi_master #(
                     end
                 end
                 E_GAP: begin
-                    gap_cnt <= gap_cnt + 4'd1;
+                    gap_cnt   <= gap_cnt + 4'd1;
+                    sck_reg   <= 1'b0;
+                    sd_oe_reg <= 4'b0000;
                 end
                 default: begin
                     sck_reg <= 1'b0;
                 end
             endcase
-            if (tcem_expired) begin
+            if (tcem_expired & ~cs_ram_n_reg) begin
                 cs_ram_n_reg <= 1'b1;
+                sck_reg      <= 1'b0;
+                sd_oe_reg    <= 4'b0000;
+                stop_pending <= 1'b1;
             end
         end
     end

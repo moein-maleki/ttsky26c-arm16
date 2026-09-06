@@ -16,8 +16,8 @@
 ## 1. Purpose
 
 arm16 is a small ARM processor. It fetches its program from an external flash chip and keeps its data in an
-external RAM chip. It shows what it does on a monitor through the TinyVGA Pmod. It talks to a computer
-over a serial link when you ask it to.
+external RAM chip. It shows what it does on a monitor through the TinyVGA Pmod. (The serial link of the
+first versions was dropped for area; see 3.4 and 19.)
 
 The purpose of the chip is fixed. The user must learn the full flow from RTL to GDSII, and the chip must
 work. A stranger must be able to watch it work in ten seconds with no computer attached. Every decision in
@@ -36,7 +36,7 @@ TinyTapeout. No pipelined CPU that fetches from external serial memory has been 
 | Registers | r0 to r14, 16 bits each; r15 is the program counter |
 | Program memory | 32 KB of the external QSPI flash, read-only, streamed |
 | Data memory | 32 KB of the external QSPI PSRAM |
-| Peripherals | VGA output of a 16-bit value as four large digits, switch input, UART, a retired-per-frame meter |
+| Peripherals | VGA output of a 16-bit value as four large digits, switch input, a retired-per-frame meter (the UART is not built, see 3.4) |
 | Core clock | 25 MHz, set by the demo board; it is also the VGA pixel clock, so it is fixed |
 | Memory clock | 12.5 MHz, half the core clock |
 | Expected speed | 16 core cycles per instruction in straight-line code, about 34 on loop-heavy and 48 on load-heavy code (cycle model, section 13) |
@@ -327,7 +327,7 @@ A store to the flash range does nothing. A fetch from the PSRAM or peripheral ra
 | Standalone demo | DISP_SEL 0, UART_EN 0, BOOT_ROM 0 | the program in the flash runs and draws on the screen |
 | Proof of life, no memory Pmod | BOOT_ROM 1, DISP_SEL 0 | the ROM program counts on the screen |
 | Is it fetching? | DISP_SEL 1 | the screen shows the program counter; the background turns blue while the bus works |
-| Serial debug | UART_EN 1 | the program prints and reads over USB serial; the screen is blank |
+| Serial debug | UART_EN 1 | not available in v0.4: the UART is not built; the screen goes blank and uo_out[4] rests high |
 | Pipeline study | BOOT_ROM 1, FWD_EN 0 or 1 | the ROM program's count rate changes about 2x; the meter shows it. On flash programs FWD_EN has no visible effect |
 
 ## 10. Reset and boot
@@ -362,11 +362,17 @@ design is re-synthesized after each one. A feature that breaks the cap is droppe
   monitors accept. The clock cannot be lowered to ease timing; the design must close at 25 MHz. Memory
   clock 12.5 MHz from a toggle flip-flop.
 - The sky130 output pad is rated 33 MHz. The TinyTapeout multiplexer adds a measured 20 ns round trip.
-  With the flash's 6 ns clock-to-output and 3 ns of setup, one memory clock period of 80 ns leaves 51 ns
-  of margin.
+  The return data of a nibble is valid at the chip's pin from (round trip + 6 ns) to (80 ns + round trip
+  + 1.5 ns) after the SCK falling edge that launched it. With QSPI_DLY = 2 the capture is 60 ns after that
+  edge: 31 ns of setup margin and 41 ns of hold margin at a 20 ns round trip. QSPI_DLY = 3 captures at
+  100 ns and has 1.5 ns of hold margin at 20 ns (it is the setting for round trips above about 25 ns);
+  QSPI_DLY = 1 captures at 20 ns and works only below an 11 ns round trip. Static timing analysis cannot
+  prove this window (the data path is asynchronous to the core clock); the delay-sweep simulation and
+  the bring-up strap sweep are the evidence.
 - Timing constraints follow TinyQV: 65% of the period is budgeted to input and output delay on the Pmod
   pins, 20% on the memory clock pin, and 2.5 ns of extra clock uncertainty for the multiplexer.
-- The register file and status register write on the falling edge. Those paths get half a period.
+- The register file writes on the falling edge; that path gets half a period. The status register writes
+  on the rising edge (v0.4).
 - The board clock stays at 25 MHz because of the video timing, even if hardening closes higher.
 
 ## 13. Expected performance
@@ -433,8 +439,8 @@ The chip is done when every item below passes.
 3. Set DISP_SEL 1. The screen shows the program counter cycling on a black background.
 4. Fit the memory Pmod. Set the quad-enable bit. Program a test image. Set BOOT_ROM 0. Reset. The screen
    shows the test program's output, and in hardware view the background turns blue while the bus works.
-5. Set UART_EN 1. The screen goes blank. Open the serial console. Run the console test program.
-6. Try QSPI_DLY values 1, 2 and 3 and note which work. The clock stays at 25 MHz.
+5. (v0.4: no UART. UART_EN 1 only blanks the screen.)
+6. Try QSPI_DLY values 1, 2 and 3 and note which work; 2 is the nominal setting. The clock stays at 25 MHz.
 7. Film the standalone demo with a USB power brick, the monitor, and no computer.
 
 ## 17. Decisions taken in this specification

@@ -114,7 +114,7 @@ module arm16_controller (
         fetch_word_load_out = 1'b0;
         fetch_src_rom_out   = 1'b0;
         if_id_load_out      = 1'b0;
-        if_id_bubble_out    = redirect_in;
+        if_id_bubble_out    = abort;
         id_ex_bubble_out    = 1'b1;
         mem_busy_out        = mem_busy;
         case (present_state)

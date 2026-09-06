@@ -8,7 +8,7 @@ import random
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles, RisingEdge, Timer
+from cocotb.triggers import ClockCycles, FallingEdge, RisingEdge, Timer
 
 import arm16_asm as asm
 import programs
@@ -353,8 +353,12 @@ class FlashRun:
     def __init__(self, dut, source, fwd_en=1, dly=2, round_trip=20.0, sw_extra=0, disp_sel=0, user=0):
         self.dut = dut
         # every register is written before the program runs (spec 10): the dump must never store an
-        # undefined value, and the model starts from the same values
-        self.words = asm.assemble(REGISTER_INIT + "\n" + source + "\n" + asm.epilogue(DUMP_BASE))
+        # undefined value, and the model starts from the same values; a trailing self-branch would hide the
+        # epilogue, so it is removed (the epilogue ends with its own)
+        lines = [l for l in source.splitlines() if l.strip()]
+        while lines and lines[-1].strip().replace(" ", "") in ("B.", "B."):
+            lines.pop()
+        self.words = asm.assemble(REGISTER_INIT + "\n" + "\n".join(lines) + "\n" + asm.epilogue(DUMP_BASE))
         self.image = asm.build_flash_image(self.words)
         self.ui = pins(fwd_en=fwd_en, dly=dly, boot_rom=0, disp_sel=disp_sel, user=user) | sw_extra
         self.model = Arm16Model(self.image, fwd_en=bool(fwd_en), sw=self.ui)
@@ -365,11 +369,20 @@ class FlashRun:
         self.psram = qspi_models.PsramModel(dut, self.bus, round_trip)
         self.monitor = qspi_models.BusMonitor(dut)
 
-    async def run(self, timeout_us=20000):
-        await reset_dut(self.dut, self.ui)
+    def start_models(self):
         self.flash.start()
         self.psram.start()
         self.monitor.start()
+
+    def stop(self):
+        """Cancel every model coroutine so a later run on the same DUT has a single driver."""
+        for m in (self.flash, self.psram, self.monitor):
+            m.stop()
+        self.bus.release()
+
+    async def run(self, timeout_us=20000):
+        await reset_dut(self.dut, self.ui)
+        self.start_models()
         layout = asm.EPILOGUE_LAYOUT
         done_addr = DUMP_BASE + 2 * layout["done_slot"]
         deadline = get_sim_time_ns() + timeout_us * 1000
@@ -380,6 +393,7 @@ class FlashRun:
                 break
             assert get_sim_time_ns() < deadline, "timeout waiting for the done marker"
         await ClockCycles(self.dut.clk, 20)
+        self.stop()
         return self
 
     def model_word(self, cpu_addr):
@@ -508,20 +522,21 @@ async def test_flash_literal_load(dut):
     """LDR from a literal pool in the flash reads the 16-bit little-endian word at the byte address."""
     start_clock(dut)
     src = """
-        MOV r0, #0x40
-        LDR r1, [r0, #0]         ; low half of the word at 0x40
+        MOV r0, #0x54
+        LDR r1, [r0, #0]         ; low half of the literal at 0x54 (word 21: 15 init words + 6)
         LDR r2, [r0, #2]         ; high half
-        LDR r3, [r15, #0x28]     ; pc + 8 + 0x28 = 0x40 when this sits at 0x10... computed by the model anyway
+        LDR r3, [r15, #0x08]     ; pc-relative: this LDR sits at 0x48, pc + 8 + 8 = 0x58 = the second literal
         B skip
         .word 0xBEEFCAFE
         .word 0x12345678
     skip:
         ADD r4, r1, r2
     """
-    words = asm.assemble(src)
     run = await FlashRun(dut, src).run()
     run.check()
-    assert run.model.regs[1] == 0xCAFE or True   # the model is the oracle; the literal sits wherever the assembler put it
+    # the literal pool sits at word 15 + 6 = 0x54 after the register init; r1 and r2 read its halves
+    assert run.model_word(DUMP_BASE + 2 * 1) == 0xCAFE and run.model_word(DUMP_BASE + 2 * 2) == 0xBEEF, \
+        "the literal pool moved: r1 0x%04X r2 0x%04X" % (run.model_word(DUMP_BASE + 2), run.model_word(DUMP_BASE + 4))
 
 
 @cocotb.test(skip=GL)
@@ -530,7 +545,7 @@ async def test_backpressure_hold(dut):
     start_clock(dut)
     run = FlashRun(dut, straight_line(40))
     await reset_dut(dut, run.ui)
-    run.flash.start(); run.psram.start(); run.monitor.start()
+    run.start_models()
     d = dp(dut)
     c = ctl(dut)
     # let the stream deliver a few words, then force a hazard stall for 60 cycles (more than three word times)
@@ -562,8 +577,6 @@ async def test_backpressure_hold(dut):
             "fetch_addr 0x%04X after %d accepts from 0x%04X" % (int(d.fetch_addr.value), accepts, addr_at_force)
         accepts += int(c.if_id_load_out.value)
     assert accepts >= 1, "the parked word was not accepted after the stall"
-    layout = asm.EPILOGUE_LAYOUT
-    await with_timeout(run.psram.write_event.wait(), 2000000, "ns")
     await run.run_to_done()
     run.check()
 
@@ -574,6 +587,7 @@ async def _run_to_done(self):
     for _ in range(200):
         if self.psram.last_write and self.psram.last_write[0] == (done_addr - 0x8000) and self.psram.last_write[1] == layout["done_value"]:
             await ClockCycles(self.dut.clk, 20)
+            self.stop()
             return
         self.psram.write_event.clear()
         await with_timeout(self.psram.write_event.wait(), 2000000, "ns")
@@ -592,14 +606,16 @@ async def test_delay_sweep(dut):
     for rt in (0, 5, 10, 15, 20, 25, 30, 35, 40):
         for dly in (1, 2, 3):
             ok = True
+            run = FlashRun(dut, src, dly=dly, round_trip=rt)
             try:
-                run = await FlashRun(dut, src, dly=dly, round_trip=rt).run(timeout_us=2000)
+                await run.run(timeout_us=2000)
                 run.check()
             except Exception as exc:       # noqa: BLE001 - a failing strap is a data point, not a test failure
                 ok = False
                 dut._log.info("round trip %d ns strap %d: %s" % (rt, dly, str(exc)[:80]))
+            finally:
+                run.stop()                 # one driver per iteration: the old models must not touch uio_in
             results[(rt, dly)] = ok
-            # a failed run may leave the bus models mid-transaction: reset clears the DUT, the models restart per run
     table = "\n".join("rt %2d ns: " % rt + " ".join("strap%d=%s" % (dly, "ok " if results[(rt, dly)] else "BAD") for dly in (1, 2, 3)) for rt in (0, 5, 10, 15, 20, 25, 30, 35, 40))
     dut._log.info("delay sweep:\n" + table)
     for rt in (0, 10, 20, 30):
@@ -663,20 +679,23 @@ async def test_tcem_hard_counter(dut):
     start_clock(dut)
     run = FlashRun(dut, "MOV r0, #0x8000\nLDR r1, [r0, #0]\nADD r2, r1, #1")
     await reset_dut(dut, run.ui)
-    run.flash.start(); run.psram.start(); run.monitor.start()
+    run.start_models()
     engine = dp(dut).qspi_master_unit
     await FallingEdge(dut.cs_ram_n)
     await ClockCycles(dut.clk, 10)
-    engine.rx_delay_in.value = Force(0)   # harmless; the real stall is the state hold below
-    engine.present_state.value = Force(2)  # hold E_DATA
+    engine.present_state.value = Force(2)  # hold E_DATA: the read never completes
     await ClockCycles(dut.clk, 160)
     engine.present_state.value = Release()
-    engine.rx_delay_in.value = Release()
-    await ClockCycles(dut.clk, 5)
+    await ClockCycles(dut.clk, 3)
+    await Timer(SAMPLE_NS, unit="ns")
     assert int(dut.cs_ram_n.value) == 1, "the hard counter did not raise the PSRAM select"
+    assert int(dut.qspi_sck.value) == 0 and int(dut.sd_oe.value) == 0, "SCK or the lanes stayed active after the timeout"
     assert int(engine.fault_out.value) == 1, "fault not set"
     low = run.psram.cs_low_max_ns
-    assert 5900 < low < 8000, "chip select low for %.0f ns" % low
+    assert 5900 < low < 6100, "chip select low for %.0f ns, expected about 6,040" % low
+    assert not run.psram.errors, run.psram.errors
+    assert not run.monitor.errors, run.monitor.errors
+    run.stop()
 
 
 @cocotb.test()
@@ -706,7 +725,7 @@ async def test_negative_byte_order(dut):
         swapped[i], swapped[i + 1] = swapped[i + 1], swapped[i]
     run.flash.mem[:len(swapped)] = swapped
     await reset_dut(dut, run.ui)
-    run.flash.start(); run.psram.start(); run.monitor.start()
+    run.start_models()
     try:
         await with_timeout(run.psram.write_event.wait(), 300000, "ns")
         completed = True
@@ -720,6 +739,7 @@ async def test_negative_byte_order(dut):
         except AssertionError as exc:
             if "cannot see" in str(exc):
                 raise
+    run.stop()
     dut._log.info("byte-swapped image did not match, as it must")
 
 
@@ -765,6 +785,7 @@ async def capture_band(dut, rows, value, fg, bg, anchor_v=0):
     last_row = max(rows)
     hs_falls = 0
     cycles = 0
+    prev_hs = 0
     while v <= last_row:
         await mid_cycle(dut)
         h += 1
@@ -772,11 +793,15 @@ async def capture_band(dut, rows, value, fg, bg, anchor_v=0):
             h = 0
             v += 1
         uo = int(dut.uo_out.value)
-        if h == vga_capture.H_SYNC_START:
-            assert (uo >> 7 & 1) == 0, "HSYNC not low at h=656 v=%d" % v
-            hs_falls += 1
-        if h == vga_capture.H_SYNC_START - 1:
-            assert (uo >> 7 & 1) == 1, "HSYNC low before h=656 v=%d" % v
+        hs = uo >> 7 & 1
+        if prev_hs == 1 and hs == 0:
+            hs_falls += 1                                        # a real falling edge on the pin
+            assert h == vga_capture.H_SYNC_START, "HSYNC fell at h=%d v=%d" % (h, v)
+        prev_hs = hs
+        if h == vga_capture.H_SYNC_END:
+            assert hs == 1, "HSYNC still low at h=752 v=%d" % v
+        if v < vga_capture.V_SYNC_START:
+            assert (uo >> 3 & 1) == 1, "VSYNC low outside its pulse at h=%d v=%d" % (h, v)
         if v in rows_set and h < vga_capture.WIDTH:
             frame[v][h] = vga_capture.colour_from_pins(uo)
         cycles += 1
@@ -806,7 +831,7 @@ async def test_demo_draws_end_to_end(dut):
     """
     run = FlashRun(dut, src)
     await reset_dut(dut, run.ui)
-    run.flash.start(); run.psram.start(); run.monitor.start()
+    run.start_models()
     # the program writes the registers within about 1,500 cycles; the band starts at line 160
     await capture_band(dut, range(160, 320, 8 if GL else 1), 0x1A2F, 0x2A, 0x15)
     await run.run_to_done()
