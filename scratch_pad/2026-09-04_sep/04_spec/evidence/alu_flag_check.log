@@ -1,0 +1,9 @@
+ADD 5+3                  a=0005 b=0003 -> r=0008  N=x Z=0 C=0 V=x   ARM expects C=0 N=0 V=0  MISMATCH
+ADD FFFF+1               a=ffff b=0001 -> r=0000  N=x Z=1 C=0 V=x   ARM expects C=1 N=0 V=0  MISMATCH
+7FFF+1 (ovf)             a=7fff b=0001 -> r=8000  N=x Z=0 C=0 V=x   ARM expects C=0 N=1 V=1  MISMATCH
+DD 8000+8000             a=8000 b=8000 -> r=0000  N=x Z=1 C=1 V=x   ARM expects C=1 N=0 V=1  MISMATCH
+SUB 5-3                  a=0005 b=0003 -> r=0002  N=x Z=0 C=0 V=x   ARM expects C=1 N=0 V=0  MISMATCH
+SUB 3-5                  a=0003 b=0005 -> r=fffe  N=x Z=0 C=1 V=x   ARM expects C=0 N=1 V=0  MISMATCH
+SUB 5-5                  a=0005 b=0005 -> r=0000  N=x Z=1 C=0 V=x   ARM expects C=1 N=0 V=0  MISMATCH
+8000-1 (ovf)             a=8000 b=0001 -> r=7fff  N=x Z=0 C=1 V=x   ARM expects C=1 N=0 V=1  MISMATCH
+tb.v:20: $finish called at 8000 (1ps)

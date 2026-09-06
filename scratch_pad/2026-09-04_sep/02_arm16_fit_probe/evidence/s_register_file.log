@@ -1,0 +1,794 @@
+
+ /----------------------------------------------------------------------------\
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |  Copyright (C) 2012 - 2026  Claire Xenia Wolf <claire@yosyshq.com>         |
+ |  Distributed under an ISC-like license, type "license" to see terms        |
+ \----------------------------------------------------------------------------/
+ Yosys 0.67+40 (git sha1 45ea2b8d6-dirty, Release, Clang /usr/bin/clang++ 18.1.8)
+
+-- Running command `read_verilog -sv *.v; hierarchy -top register_file; flatten; proc; memory; opt -fast; techmap; opt -fast; dfflibmap -liberty /home/moein/.ciel/ciel/sky130/versions/8afc8346a57fe1ab7934ba5a6056ea8b43078e71/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib; abc -liberty /home/moein/.ciel/ciel/sky130/versions/8afc8346a57fe1ab7934ba5a6056ea8b43078e71/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib; opt_clean; stat -liberty /home/moein/.ciel/ciel/sky130/versions/8afc8346a57fe1ab7934ba5a6056ea8b43078e71/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib' --
+
+1. Executing Verilog-2005 frontend: EXE_stage.v
+Parsing SystemVerilog input from `EXE_stage.v' to AST representation.
+Generating RTLIL representation for module `\EXE_stage'.
+Successfully finished Verilog frontend.
+
+2. Executing Verilog-2005 frontend: EXE_stage_reg.v
+Parsing SystemVerilog input from `EXE_stage_reg.v' to AST representation.
+Generating RTLIL representation for module `\EXE_stage_reg'.
+Successfully finished Verilog frontend.
+
+3. Executing Verilog-2005 frontend: ID_stage.v
+Parsing SystemVerilog input from `ID_stage.v' to AST representation.
+Generating RTLIL representation for module `\ID_stage'.
+Successfully finished Verilog frontend.
+
+4. Executing Verilog-2005 frontend: ID_stage_reg.v
+Parsing SystemVerilog input from `ID_stage_reg.v' to AST representation.
+Generating RTLIL representation for module `\ID_stage_reg'.
+Successfully finished Verilog frontend.
+
+5. Executing Verilog-2005 frontend: IF_stage.v
+Parsing SystemVerilog input from `IF_stage.v' to AST representation.
+Generating RTLIL representation for module `\IF_stage'.
+Successfully finished Verilog frontend.
+
+6. Executing Verilog-2005 frontend: IF_stage_reg.v
+Parsing SystemVerilog input from `IF_stage_reg.v' to AST representation.
+Generating RTLIL representation for module `\IF_stage_reg'.
+Successfully finished Verilog frontend.
+
+7. Executing Verilog-2005 frontend: MEM_stage.v
+Parsing SystemVerilog input from `MEM_stage.v' to AST representation.
+Generating RTLIL representation for module `\MEM_stage'.
+Successfully finished Verilog frontend.
+
+8. Executing Verilog-2005 frontend: MEM_stage_reg.v
+Parsing SystemVerilog input from `MEM_stage_reg.v' to AST representation.
+Generating RTLIL representation for module `\MEM_stage_reg'.
+Successfully finished Verilog frontend.
+
+9. Executing Verilog-2005 frontend: WB_stage.v
+Parsing SystemVerilog input from `WB_stage.v' to AST representation.
+Generating RTLIL representation for module `\WB_stage'.
+Successfully finished Verilog frontend.
+
+10. Executing Verilog-2005 frontend: alu.v
+Parsing SystemVerilog input from `alu.v' to AST representation.
+Generating RTLIL representation for module `\alu'.
+alu.v:29: Warning: Range select out of bounds on signal `\alu_result': Setting result bit to undef.
+alu.v:32: Warning: Range select out of bounds on signal `\alu_in_1': Setting result bit to undef.
+alu.v:32: Warning: Range select out of bounds on signal `\alu_in_2': Setting result bit to undef.
+alu.v:32: Warning: Range select out of bounds on signal `\alu_result': Setting result bit to undef.
+alu.v:33: Warning: Range select out of bounds on signal `\alu_in_1': Setting result bit to undef.
+alu.v:33: Warning: Range select out of bounds on signal `\alu_in_2': Setting result bit to undef.
+alu.v:33: Warning: Range select out of bounds on signal `\alu_result': Setting result bit to undef.
+alu.v:33: Warning: Range select out of bounds on signal `\alu_in_2': Setting result bit to undef.
+Successfully finished Verilog frontend.
+
+11. Executing Verilog-2005 frontend: arm16_top.v
+Parsing SystemVerilog input from `arm16_top.v' to AST representation.
+Generating RTLIL representation for module `\arm16_top'.
+Successfully finished Verilog frontend.
+
+12. Executing Verilog-2005 frontend: arm_processor.v
+Parsing SystemVerilog input from `arm_processor.v' to AST representation.
+Generating RTLIL representation for module `\arm_processor'.
+Successfully finished Verilog frontend.
+
+13. Executing Verilog-2005 frontend: condition_check.v
+Parsing SystemVerilog input from `condition_check.v' to AST representation.
+Generating RTLIL representation for module `\condition_check'.
+Successfully finished Verilog frontend.
+
+14. Executing Verilog-2005 frontend: control_unit.v
+Parsing SystemVerilog input from `control_unit.v' to AST representation.
+Generating RTLIL representation for module `\control_unit'.
+Successfully finished Verilog frontend.
+
+15. Executing Verilog-2005 frontend: forwarding_unit.v
+Parsing SystemVerilog input from `forwarding_unit.v' to AST representation.
+Generating RTLIL representation for module `\forwarding_unit'.
+Successfully finished Verilog frontend.
+
+16. Executing Verilog-2005 frontend: hazard_detection.v
+Parsing SystemVerilog input from `hazard_detection.v' to AST representation.
+Generating RTLIL representation for module `\hazard_detection'.
+Successfully finished Verilog frontend.
+
+17. Executing Verilog-2005 frontend: qspi_master.v
+Parsing SystemVerilog input from `qspi_master.v' to AST representation.
+Generating RTLIL representation for module `\qspi_master'.
+Successfully finished Verilog frontend.
+
+18. Executing Verilog-2005 frontend: register_file.v
+Parsing SystemVerilog input from `register_file.v' to AST representation.
+Generating RTLIL representation for module `\register_file'.
+Successfully finished Verilog frontend.
+
+19. Executing Verilog-2005 frontend: status_register.v
+Parsing SystemVerilog input from `status_register.v' to AST representation.
+Generating RTLIL representation for module `\status_register'.
+Successfully finished Verilog frontend.
+
+20. Executing Verilog-2005 frontend: val2_generator.v
+Parsing SystemVerilog input from `val2_generator.v' to AST representation.
+Generating RTLIL representation for module `\val2_generator'.
+Successfully finished Verilog frontend.
+
+21. Executing HIERARCHY pass (managing design hierarchy).
+
+21.1. Analyzing design hierarchy..
+Top module:  \register_file
+
+21.2. Analyzing design hierarchy..
+Top module:  \register_file
+Removing unused module `\val2_generator'.
+Removing unused module `\status_register'.
+Removing unused module `\qspi_master'.
+Removing unused module `\hazard_detection'.
+Removing unused module `\forwarding_unit'.
+Removing unused module `\control_unit'.
+Removing unused module `\condition_check'.
+Removing unused module `\arm_processor'.
+Removing unused module `\arm16_top'.
+Removing unused module `\alu'.
+Removing unused module `\WB_stage'.
+Removing unused module `\MEM_stage_reg'.
+Removing unused module `\MEM_stage'.
+Removing unused module `\IF_stage_reg'.
+Removing unused module `\IF_stage'.
+Removing unused module `\ID_stage_reg'.
+Removing unused module `\ID_stage'.
+Removing unused module `\EXE_stage_reg'.
+Removing unused module `\EXE_stage'.
+Removed 19 unused modules.
+
+22. Executing FLATTEN pass (flatten design).
+
+23. Executing PROC pass (convert processes to netlists).
+
+23.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+23.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Marked 1 switch rules as full_case in process $proc$register_file.v:26$233 in module register_file.
+Removed a total of 0 dead cases.
+
+23.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 0 redundant assignments.
+Promoted 23 assignments to connections.
+
+23.4. Executing PROC_INIT pass (extract init attributes).
+
+23.5. Executing PROC_ARST pass (detect async resets in processes).
+
+23.6. Executing PROC_ROM pass (convert switches to ROMs).
+Converted 0 switches.
+<suppressed ~1 debug messages>
+
+23.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\register_file.$proc$register_file.v:17$263'.
+Creating decoders for process `\register_file.$proc$register_file.v:15$262'.
+Creating decoders for process `\register_file.$proc$register_file.v:26$233'.
+     1/6: $1$memwr$\register_file_data$register_file.v:27$229_EN[15:0]$242
+     2/6: $1$memwr$\register_file_data$register_file.v:27$229_DATA[15:0]$241
+     3/6: $1$memwr$\register_file_data$register_file.v:27$229_ADDR[3:0]$240
+     4/6: $1$memwr$\register_file_data$register_file.v:28$230_EN[15:0]$245
+     5/6: $1$memwr$\register_file_data$register_file.v:28$230_DATA[15:0]$244
+     6/6: $1$memwr$\register_file_data$register_file.v:28$230_ADDR[3:0]$243
+
+23.8. Executing PROC_DLATCH pass (convert process syncs to latches).
+No latch inferred for signal `\register_file.\i' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$214_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$215_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$216_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$217_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$218_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$219_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$220_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$221_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$222_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$223_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$224_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$225_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$226_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$227_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.$memwr$\register_file_data$register_file.v:19$228_EN' from process `\register_file.$proc$register_file.v:17$263'.
+No latch inferred for signal `\register_file.\i' from process `\register_file.$proc$register_file.v:15$262'.
+
+23.9. Executing PROC_DFF pass (convert process syncs to FFs).
+Creating register for signal `\register_file.$memwr$\register_file_data$register_file.v:27$229_ADDR' using process `\register_file.$proc$register_file.v:26$233'.
+  created $dff cell `$procdff$316' with negative edge clock.
+Creating register for signal `\register_file.$memwr$\register_file_data$register_file.v:27$229_DATA' using process `\register_file.$proc$register_file.v:26$233'.
+  created $dff cell `$procdff$317' with negative edge clock.
+Creating register for signal `\register_file.$memwr$\register_file_data$register_file.v:27$229_EN' using process `\register_file.$proc$register_file.v:26$233'.
+  created $dff cell `$procdff$318' with negative edge clock.
+Creating register for signal `\register_file.$memwr$\register_file_data$register_file.v:28$230_ADDR' using process `\register_file.$proc$register_file.v:26$233'.
+  created $dff cell `$procdff$319' with negative edge clock.
+Creating register for signal `\register_file.$memwr$\register_file_data$register_file.v:28$230_DATA' using process `\register_file.$proc$register_file.v:26$233'.
+  created $dff cell `$procdff$320' with negative edge clock.
+Creating register for signal `\register_file.$memwr$\register_file_data$register_file.v:28$230_EN' using process `\register_file.$proc$register_file.v:26$233'.
+  created $dff cell `$procdff$321' with negative edge clock.
+
+23.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+23.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Removing empty process `register_file.$proc$register_file.v:17$263'.
+Removing empty process `register_file.$proc$register_file.v:15$262'.
+Found and cleaned up 1 empty switch in `\register_file.$proc$register_file.v:26$233'.
+Removing empty process `register_file.$proc$register_file.v:26$233'.
+Cleaned up 1 empty switch.
+
+23.12. Executing OPT_EXPR pass (perform const folding).
+Optimizing module register_file.
+
+24. Executing MEMORY pass.
+
+24.1. Executing OPT_MEM pass (optimize memories).
+Performed a total of 0 transformations.
+
+24.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+Performed a total of 0 transformations.
+
+24.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+  Analyzing register_file.register_file_data write port 0.
+  Analyzing register_file.register_file_data write port 1.
+
+24.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
+
+24.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+Checking read port `\register_file_data'[0] in module `\register_file': no output FF found.
+Checking read port `\register_file_data'[1] in module `\register_file': no output FF found.
+Checking read port `\register_file_data'[2] in module `\register_file': no output FF found.
+Checking read port address `\register_file_data'[0] in module `\register_file': no address FF found.
+Checking read port address `\register_file_data'[1] in module `\register_file': no address FF found.
+Checking read port address `\register_file_data'[2] in module `\register_file': no address FF found.
+
+24.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \register_file..
+Removed 6 unused cells and 58 unused wires.
+<suppressed ~7 debug messages>
+
+24.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+Consolidating read ports of memory register_file.register_file_data by address:
+Consolidating write ports of memory register_file.register_file_data by address:
+  Merging ports 0, 1 (address \write_src_reg).
+
+24.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+Performed a total of 0 transformations.
+
+24.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \register_file..
+Removed 2 unused cells and 2 unused wires.
+<suppressed ~3 debug messages>
+
+24.10. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+24.11. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+Mapping memory \register_file_data in module \register_file:
+  created 15 $dff cells and 0 static cells of width 16.
+  read interface: 0 $dff and 45 $mux cells.
+  write interface: 240 write mux blocks.
+
+25. Executing OPT pass (performing simple optimizations).
+
+25.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module register_file.
+<suppressed ~8 debug messages>
+
+25.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\register_file'.
+Computing hashes of 603 cells of `\register_file'.
+Finding duplicate cells in `\register_file'.
+Removed a total of 0 cells.
+
+25.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+25.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \register_file..
+Removed 0 unused cells and 64 unused wires.
+<suppressed ~1 debug messages>
+
+25.5. Finished fast OPT passes.
+
+26. Executing TECHMAP pass (map to technology primitives).
+
+26.1. Executing Verilog-2005 frontend: /home/moein/oss-cad-suite/lib/../share/yosys/techmap.v
+Parsing Verilog input from `/home/moein/oss-cad-suite/lib/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `$__div_mod_u'.
+Generating RTLIL representation for module `$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Generating RTLIL representation for module `$connect'.
+Generating RTLIL representation for module `$input_port'.
+Successfully finished Verilog frontend.
+
+26.2. Continuing TECHMAP pass.
+Using extmapper simplemap for cells of type $and.
+Using extmapper simplemap for cells of type $not.
+Using extmapper simplemap for cells of type $or.
+Using extmapper simplemap for cells of type $mux.
+Using extmapper simplemap for cells of type $dff.
+No more expansions possible.
+<suppressed ~680 debug messages>
+
+27. Executing OPT pass (performing simple optimizations).
+
+27.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module register_file.
+<suppressed ~288 debug messages>
+
+27.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\register_file'.
+Computing hashes of 1291 cells of `\register_file'.
+Finding duplicate cells in `\register_file'.
+Computing hashes of 1276 cells of `\register_file'.
+Finding duplicate cells in `\register_file'.
+<suppressed ~45 debug messages>
+Removed a total of 15 cells.
+
+27.3. Executing OPT_DFF pass (perform DFF optimizations).
+Adding EN signal on $auto$ff.cc:337:slice$1790 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[0] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1806 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[1] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1822 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[2] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1838 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[3] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1854 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[4] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1870 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[5] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1886 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[6] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1902 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[7] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1918 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[8] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1934 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[9] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1950 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[10] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1966 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[11] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1982 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[12] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1998 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[13] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$2014 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$391, Q = \register_file_data[14] [15]).
+Adding EN signal on $auto$ff.cc:337:slice$1775 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[0] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1776 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[0] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1777 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[0] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1778 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[0] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1779 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[0] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1780 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[0] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1781 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[0] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1782 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[0] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1783 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[0] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1784 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[0] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1785 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[0] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1786 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[0] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1787 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[0] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1788 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[0] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1789 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[0] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1791 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[1] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1792 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[1] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1793 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[1] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1794 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[1] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1795 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[1] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1796 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[1] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1797 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[1] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1798 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[1] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1799 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[1] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1800 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[1] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1801 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[1] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1802 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[1] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1803 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[1] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1804 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[1] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1805 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[1] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1807 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[2] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1808 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[2] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1809 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[2] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1810 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[2] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1811 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[2] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1812 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[2] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1813 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[2] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1814 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[2] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1815 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[2] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1816 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[2] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1817 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[2] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1818 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[2] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1819 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[2] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1820 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[2] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1821 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[2] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1823 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[3] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1824 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[3] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1825 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[3] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1826 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[3] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1827 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[3] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1828 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[3] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1829 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[3] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1830 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[3] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1831 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[3] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1832 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[3] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1833 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[3] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1834 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[3] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1835 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[3] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1836 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[3] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1837 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[3] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1839 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[4] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1840 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[4] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1841 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[4] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1842 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[4] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1843 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[4] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1844 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[4] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1845 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[4] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1846 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[4] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1847 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[4] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1848 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[4] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1849 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[4] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1850 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[4] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1851 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[4] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1852 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[4] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1853 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[4] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1855 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[5] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1856 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[5] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1857 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[5] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1858 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[5] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1859 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[5] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1860 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[5] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1861 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[5] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1862 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[5] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1863 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[5] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1864 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[5] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1865 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[5] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1866 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[5] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1867 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[5] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1868 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[5] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1869 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[5] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1871 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[6] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1872 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[6] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1873 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[6] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1874 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[6] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1875 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[6] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1876 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[6] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1877 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[6] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1878 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[6] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1879 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[6] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1880 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[6] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1881 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[6] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1882 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[6] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1883 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[6] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1884 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[6] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1885 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[6] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1887 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[7] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1888 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[7] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1889 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[7] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1890 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[7] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1891 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[7] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1892 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[7] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1893 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[7] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1894 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[7] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1895 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[7] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1896 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[7] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1897 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[7] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1898 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[7] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1899 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[7] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1900 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[7] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1901 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[7] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1903 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[8] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1904 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[8] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1905 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[8] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1906 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[8] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1907 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[8] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1908 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[8] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1909 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[8] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1910 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[8] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1911 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[8] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1912 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[8] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1913 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[8] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1914 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[8] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1915 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[8] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1916 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[8] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1917 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[8] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1919 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[9] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1920 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[9] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1921 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[9] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1922 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[9] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1923 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[9] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1924 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[9] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1925 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[9] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1926 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[9] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1927 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[9] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1928 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[9] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1929 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[9] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1930 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[9] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1931 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[9] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1932 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[9] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1933 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[9] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1935 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[10] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1936 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[10] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1937 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[10] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1938 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[10] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1939 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[10] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1940 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[10] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1941 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[10] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1942 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[10] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1943 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[10] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1944 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[10] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1945 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[10] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1946 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[10] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1947 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[10] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1948 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[10] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1949 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[10] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1951 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[11] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1952 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[11] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1953 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[11] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1954 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[11] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1955 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[11] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1956 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[11] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1957 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[11] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1958 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[11] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1959 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[11] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1960 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[11] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1961 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[11] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1962 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[11] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1963 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[11] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1964 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[11] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1965 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[11] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1967 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[12] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1968 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[12] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1969 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[12] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1970 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[12] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1971 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[12] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1972 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[12] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1973 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[12] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1974 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[12] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1975 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[12] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1976 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[12] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1977 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[12] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1978 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[12] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1979 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[12] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1980 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[12] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1981 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[12] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1983 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[13] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$1984 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[13] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$1985 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[13] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$1986 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[13] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$1987 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[13] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$1988 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[13] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$1989 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[13] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$1990 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[13] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$1991 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[13] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$1992 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[13] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$1993 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[13] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$1994 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[13] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$1995 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[13] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$1996 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[13] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$1997 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[13] [14]).
+Adding EN signal on $auto$ff.cc:337:slice$1999 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$331, Q = \register_file_data[14] [0]).
+Adding EN signal on $auto$ff.cc:337:slice$2000 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$335, Q = \register_file_data[14] [1]).
+Adding EN signal on $auto$ff.cc:337:slice$2001 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$339, Q = \register_file_data[14] [2]).
+Adding EN signal on $auto$ff.cc:337:slice$2002 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$343, Q = \register_file_data[14] [3]).
+Adding EN signal on $auto$ff.cc:337:slice$2003 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$347, Q = \register_file_data[14] [4]).
+Adding EN signal on $auto$ff.cc:337:slice$2004 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$351, Q = \register_file_data[14] [5]).
+Adding EN signal on $auto$ff.cc:337:slice$2005 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$355, Q = \register_file_data[14] [6]).
+Adding EN signal on $auto$ff.cc:337:slice$2006 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$359, Q = \register_file_data[14] [7]).
+Adding EN signal on $auto$ff.cc:337:slice$2007 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$363, Q = \register_file_data[14] [8]).
+Adding EN signal on $auto$ff.cc:337:slice$2008 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$367, Q = \register_file_data[14] [9]).
+Adding EN signal on $auto$ff.cc:337:slice$2009 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$371, Q = \register_file_data[14] [10]).
+Adding EN signal on $auto$ff.cc:337:slice$2010 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$375, Q = \register_file_data[14] [11]).
+Adding EN signal on $auto$ff.cc:337:slice$2011 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$379, Q = \register_file_data[14] [12]).
+Adding EN signal on $auto$ff.cc:337:slice$2012 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$383, Q = \register_file_data[14] [13]).
+Adding EN signal on $auto$ff.cc:337:slice$2013 ($_DFF_N_) from module register_file (D = $auto$rtlil.cc:3402:Mux$387, Q = \register_file_data[14] [14]).
+
+27.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \register_file..
+Removed 241 unused cells and 498 unused wires.
+<suppressed ~242 debug messages>
+
+27.5. Rerunning OPT passes. (Removed registers in this run.)
+
+27.6. Executing OPT_EXPR pass (perform const folding).
+Optimizing module register_file.
+
+27.7. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\register_file'.
+Computing hashes of 1035 cells of `\register_file'.
+Finding duplicate cells in `\register_file'.
+Removed a total of 0 cells.
+
+27.8. Executing OPT_DFF pass (perform DFF optimizations).
+
+27.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \register_file..
+
+27.10. Finished fast OPT passes.
+
+28. Executing DFFLIBMAP pass (mapping DFF cells to sequential cells from liberty file).
+  cell sky130_fd_sc_hd__dfxtp_1 (noninv, pins=3, area=20.02) is a direct match for cell type $_DFF_P_.
+  cell sky130_fd_sc_hd__dfrtn_1 (noninv, pins=4, area=25.02) is a direct match for cell type $_DFF_NN0_.
+  cell sky130_fd_sc_hd__dfrtp_1 (noninv, pins=4, area=25.02) is a direct match for cell type $_DFF_PN0_.
+  cell sky130_fd_sc_hd__dfstp_2 (noninv, pins=4, area=26.28) is a direct match for cell type $_DFF_PN1_.
+  cell sky130_fd_sc_hd__edfxtp_1 (noninv, pins=4, area=30.03) is a direct match for cell type $_DFFE_PP_.
+  cell sky130_fd_sc_hd__dfbbn_1 (noninv, pins=6, area=32.53) is a direct match for cell type $_DFFSR_NNN_.
+  cell sky130_fd_sc_hd__dfbbp_1 (noninv, pins=6, area=32.53) is a direct match for cell type $_DFFSR_PNN_.
+  final dff cell mappings:
+    unmapped dff cell: $_DFF_N_
+    \sky130_fd_sc_hd__dfxtp_1 _DFF_P_ (.CLK( C), .D( D), .Q( Q));
+    \sky130_fd_sc_hd__dfrtn_1 _DFF_NN0_ (.CLK_N( C), .D( D), .Q( Q), .RESET_B( R));
+    unmapped dff cell: $_DFF_NN1_
+    unmapped dff cell: $_DFF_NP0_
+    unmapped dff cell: $_DFF_NP1_
+    \sky130_fd_sc_hd__dfrtp_1 _DFF_PN0_ (.CLK( C), .D( D), .Q( Q), .RESET_B( R));
+    \sky130_fd_sc_hd__dfstp_2 _DFF_PN1_ (.CLK( C), .D( D), .Q( Q), .SET_B( R));
+    unmapped dff cell: $_DFF_PP0_
+    unmapped dff cell: $_DFF_PP1_
+    unmapped dff cell: $_DFFE_NN_
+    unmapped dff cell: $_DFFE_NP_
+    unmapped dff cell: $_DFFE_PN_
+    \sky130_fd_sc_hd__edfxtp_1 _DFFE_PP_ (.CLK( C), .D( D), .DE( E), .Q( Q));
+    \sky130_fd_sc_hd__dfbbn_1 _DFFSR_NNN_ (.CLK_N( C), .D( D), .Q( Q), .Q_N(~Q), .RESET_B( R), .SET_B( S));
+    unmapped dff cell: $_DFFSR_NNP_
+    unmapped dff cell: $_DFFSR_NPN_
+    unmapped dff cell: $_DFFSR_NPP_
+    \sky130_fd_sc_hd__dfbbp_1 _DFFSR_PNN_ (.CLK( C), .D( D), .Q( Q), .Q_N(~Q), .RESET_B( R), .SET_B( S));
+    unmapped dff cell: $_DFFSR_PNP_
+    unmapped dff cell: $_DFFSR_PPN_
+    unmapped dff cell: $_DFFSR_PPP_
+
+28.1. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+<suppressed ~24 debug messages>
+Mapping DFF cells in module `\register_file':
+  mapped 240 $_DFFE_PP_ cells to \sky130_fd_sc_hd__edfxtp_1 cells.
+
+29. Executing ABC pass (technology mapping using ABC).
+
+29.1. Extracting gate netlist of module `\register_file' to `<abc-temp-dir>/input.blif'..
+ABC: using cached merged SCL: /tmp/yosys-liberty-scl-cache/yosys_merged_26d78acf.scl (1 files)
+Replacing 32 occurrences of constant undef bits with constant zero bits
+
+29.1.1. Executed ABC.
+Extracted 1035 gates and 1354 wires to a netlist network with 270 inputs and 303 outputs.
+Running ABC script: <abc-temp-dir>/abc.script
+ABC: UC Berkeley, ABC 1.01 (compiled Jul 16 2026 03:52:11)
+ABC: abc 01> empty
+ABC: abc 01> source <abc-temp-dir>/abc.script
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: Warning: Constant-0 drivers added to 48 non-driven nets in network "netlist":
+ABC: ys__n1168, ys__n1171, ys__n1173, ys__n1175 ...
+ABC: + read_scl /tmp/yosys-liberty-scl-cache/yosys_merged_26d78acf.scl 
+ABC: Warning: Detected 9 multi-output cells (for example, "sky130_fd_sc_hd__fa_1").
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &fraig -x 
+ABC: + &put 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+ABC: 
+ABC: YOSYS_ABC_DONE 
+
+29.1.2. Re-integrating ABC results.
+ABC RESULTS:   sky130_fd_sc_hd__a21o_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__a21oi_1 cells:       65
+ABC RESULTS:   sky130_fd_sc_hd__a221o_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__a221oi_1 cells:       12
+ABC RESULTS:   sky130_fd_sc_hd__a222oi_1 cells:        4
+ABC RESULTS:   sky130_fd_sc_hd__a22o_1 cells:        5
+ABC RESULTS:   sky130_fd_sc_hd__a22oi_1 cells:       51
+ABC RESULTS:   sky130_fd_sc_hd__a2bb2oi_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__a31o_1 cells:        4
+ABC RESULTS:   sky130_fd_sc_hd__a31oi_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__a32oi_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__and2_0 cells:        3
+ABC RESULTS:   sky130_fd_sc_hd__and4b_1 cells:        2
+ABC RESULTS:   sky130_fd_sc_hd__clkinv_1 cells:      249
+ABC RESULTS:   sky130_fd_sc_hd__lpflow_inputiso1p_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__lpflow_isobufsrc_1 cells:        6
+ABC RESULTS:   sky130_fd_sc_hd__mux2_1 cells:        4
+ABC RESULTS:   sky130_fd_sc_hd__mux2i_1 cells:       62
+ABC RESULTS:   sky130_fd_sc_hd__mux4_2 cells:      104
+ABC RESULTS:   sky130_fd_sc_hd__nand2_1 cells:       21
+ABC RESULTS:   sky130_fd_sc_hd__nand2b_1 cells:        7
+ABC RESULTS:   sky130_fd_sc_hd__nand3_1 cells:        4
+ABC RESULTS:   sky130_fd_sc_hd__nand3b_1 cells:        2
+ABC RESULTS:   sky130_fd_sc_hd__nand4_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__nor2_1 cells:       48
+ABC RESULTS:   sky130_fd_sc_hd__nor3_1 cells:        6
+ABC RESULTS:   sky130_fd_sc_hd__nor3b_1 cells:        3
+ABC RESULTS:   sky130_fd_sc_hd__nor4bb_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__o211ai_1 cells:        9
+ABC RESULTS:   sky130_fd_sc_hd__o21ai_0 cells:       65
+ABC RESULTS:   sky130_fd_sc_hd__o221ai_1 cells:        5
+ABC RESULTS:   sky130_fd_sc_hd__o22a_1 cells:        6
+ABC RESULTS:   sky130_fd_sc_hd__o22ai_1 cells:       18
+ABC RESULTS:   sky130_fd_sc_hd__o32a_1 cells:        8
+ABC RESULTS:   sky130_fd_sc_hd__o32ai_1 cells:       15
+ABC RESULTS:   sky130_fd_sc_hd__o41a_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__or3b_1 cells:        1
+ABC RESULTS:        internal signals:      781
+ABC RESULTS:           input signals:      270
+ABC RESULTS:          output signals:      303
+Removing temp directory.
+Removing global temp directory.
+
+30. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \register_file..
+Removed 0 unused cells and 633 unused wires.
+<suppressed ~1 debug messages>
+
+31. Printing statistics.
+
+=== register_file ===
+
+        +----------Local Count, excluding submodules.
+        |        +-Local Area, excluding submodules.
+        |        | 
+      791        - wires
+     1101        - wire bits
+       25        - public wires
+      335        - public wire bits
+        9        - ports
+       63        - port bits
+     1038 1.34E+04 cells
+        1    7.507   sky130_fd_sc_hd__a21o_1
+       65  325.312   sky130_fd_sc_hd__a21oi_1
+        1    10.01   sky130_fd_sc_hd__a221o_1
+       12  105.101   sky130_fd_sc_hd__a221oi_1
+        4   40.038   sky130_fd_sc_hd__a222oi_1
+        5   43.792   sky130_fd_sc_hd__a22o_1
+       51  382.867   sky130_fd_sc_hd__a22oi_1
+        1    8.758   sky130_fd_sc_hd__a2bb2oi_1
+        4   35.034   sky130_fd_sc_hd__a31o_1
+        1    6.256   sky130_fd_sc_hd__a31oi_1
+        1    8.758   sky130_fd_sc_hd__a32oi_1
+        3   18.768   sky130_fd_sc_hd__and2_0
+        2   20.019   sky130_fd_sc_hd__and4b_1
+      249  934.646   sky130_fd_sc_hd__clkinv_1
+      240 7.21E+03   sky130_fd_sc_hd__edfxtp_1
+        1    6.256   sky130_fd_sc_hd__lpflow_inputiso1p_1
+        6   37.536   sky130_fd_sc_hd__lpflow_isobufsrc_1
+        4   45.043   sky130_fd_sc_hd__mux2_1
+       62  620.595   sky130_fd_sc_hd__mux2i_1
+      104 2.34E+03   sky130_fd_sc_hd__mux4_2
+       21   78.826   sky130_fd_sc_hd__nand2_1
+        7   43.792   sky130_fd_sc_hd__nand2b_1
+        4   20.019   sky130_fd_sc_hd__nand3_1
+        2   15.014   sky130_fd_sc_hd__nand3b_1
+        1    6.256   sky130_fd_sc_hd__nand4_1
+       48  180.173   sky130_fd_sc_hd__nor2_1
+        6   30.029   sky130_fd_sc_hd__nor3_1
+        3   22.522   sky130_fd_sc_hd__nor3b_1
+        1    10.01   sky130_fd_sc_hd__nor4bb_1
+        9   67.565   sky130_fd_sc_hd__o211ai_1
+       65  325.312   sky130_fd_sc_hd__o21ai_0
+        5   43.792   sky130_fd_sc_hd__o221ai_1
+        6    52.55   sky130_fd_sc_hd__o22a_1
+       18  112.608   sky130_fd_sc_hd__o22ai_1
+        8   80.077   sky130_fd_sc_hd__o32a_1
+       15  131.376   sky130_fd_sc_hd__o32ai_1
+        1   11.261   sky130_fd_sc_hd__o41a_1
+        1    8.758   sky130_fd_sc_hd__or3b_1
+
+   Chip area for module '\register_file': 13445.395200
+     of which used for sequential elements: 7206.912000 (53.60%)
+
+Warnings: 3 unique messages, 8 total
+End of script. Logfile hash: dab3617a58, time: 0.31s, user: 0.15s, system: 0.02s, MEM: 46.88 MB peak
+Yosys 0.67+40 (git sha1 45ea2b8d6-dirty, Release, Clang /usr/bin/clang++ 18.1.8)
+Time spent: 55% 1x abc (0 sec), 14% 1x stat (0 sec), ...

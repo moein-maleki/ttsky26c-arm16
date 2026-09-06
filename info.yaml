@@ -1,0 +1,56 @@
+# Tiny Tapeout project information
+project:
+  title:        "arm16"
+  author:       "Moein Maleki"
+  discord:      ""
+  description:  "16-bit five-stage ARM pipeline with forwarding and hazard detection. Program in external QSPI flash, data in QSPI PSRAM, seven-segment display and UART. First ARM core on Tiny Tapeout."
+  language:     "Verilog"
+  clock_hz:     25000000
+
+  # How many tiles your design occupies? A single tile is about 167x108 uM.
+  tiles: "2x2"
+
+  # Your top module name must start with "tt_um_". Make it unique by including your github username:
+  top_module:  "tt_um_moein_maleki_arm16"
+
+  # List your project's source files here.
+  # Source files must be in ./src and you must list each source file separately, one per line.
+  # Don't forget to also update `PROJECT_SOURCES` in test/Makefile.
+  source_files:
+    - "project.v"
+
+# The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
+# This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
+pinout:
+  # Inputs
+  ui[0]: "FWD_EN"
+  ui[1]: "DISP_SEL"
+  ui[2]: "UART_EN"
+  ui[3]: "UART_RX"
+  ui[4]: "QSPI_DLY0"
+  ui[5]: "QSPI_DLY1"
+  ui[6]: "BOOT_ROM"
+  ui[7]: "USER"
+
+  # Outputs
+  uo[0]: "SEG_A"
+  uo[1]: "SEG_B"
+  uo[2]: "SEG_C"
+  uo[3]: "SEG_D"
+  uo[4]: "SEG_E / UART_TX"
+  uo[5]: "SEG_F"
+  uo[6]: "SEG_G"
+  uo[7]: "SEG_DP / QSPI_ACTIVE"
+
+  # Bidirectional pins
+  uio[0]: "CS_FLASH"
+  uio[1]: "SD0"
+  uio[2]: "SD1"
+  uio[3]: "SCK"
+  uio[4]: "SD2"
+  uio[5]: "SD3"
+  uio[6]: "CS_RAM_A"
+  uio[7]: "CS_RAM_B"
+
+# Do not change!
+yaml_version: 6

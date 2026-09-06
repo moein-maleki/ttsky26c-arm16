@@ -1,0 +1,603 @@
+
+ /----------------------------------------------------------------------------\
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |  Copyright (C) 2012 - 2026  Claire Xenia Wolf <claire@yosyshq.com>         |
+ |  Distributed under an ISC-like license, type "license" to see terms        |
+ \----------------------------------------------------------------------------/
+ Yosys 0.67+40 (git sha1 45ea2b8d6-dirty, Release, Clang /usr/bin/clang++ 18.1.8)
+
+-- Running command `read_verilog -sv *.v; hierarchy -top qspi_master; flatten; proc; memory; opt -fast; techmap; opt -fast; dfflibmap -liberty /home/moein/.ciel/ciel/sky130/versions/8afc8346a57fe1ab7934ba5a6056ea8b43078e71/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib; abc -liberty /home/moein/.ciel/ciel/sky130/versions/8afc8346a57fe1ab7934ba5a6056ea8b43078e71/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib; opt_clean; stat -liberty /home/moein/.ciel/ciel/sky130/versions/8afc8346a57fe1ab7934ba5a6056ea8b43078e71/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib' --
+
+1. Executing Verilog-2005 frontend: EXE_stage.v
+Parsing SystemVerilog input from `EXE_stage.v' to AST representation.
+Generating RTLIL representation for module `\EXE_stage'.
+Successfully finished Verilog frontend.
+
+2. Executing Verilog-2005 frontend: EXE_stage_reg.v
+Parsing SystemVerilog input from `EXE_stage_reg.v' to AST representation.
+Generating RTLIL representation for module `\EXE_stage_reg'.
+Successfully finished Verilog frontend.
+
+3. Executing Verilog-2005 frontend: ID_stage.v
+Parsing SystemVerilog input from `ID_stage.v' to AST representation.
+Generating RTLIL representation for module `\ID_stage'.
+Successfully finished Verilog frontend.
+
+4. Executing Verilog-2005 frontend: ID_stage_reg.v
+Parsing SystemVerilog input from `ID_stage_reg.v' to AST representation.
+Generating RTLIL representation for module `\ID_stage_reg'.
+Successfully finished Verilog frontend.
+
+5. Executing Verilog-2005 frontend: IF_stage.v
+Parsing SystemVerilog input from `IF_stage.v' to AST representation.
+Generating RTLIL representation for module `\IF_stage'.
+Successfully finished Verilog frontend.
+
+6. Executing Verilog-2005 frontend: IF_stage_reg.v
+Parsing SystemVerilog input from `IF_stage_reg.v' to AST representation.
+Generating RTLIL representation for module `\IF_stage_reg'.
+Successfully finished Verilog frontend.
+
+7. Executing Verilog-2005 frontend: MEM_stage.v
+Parsing SystemVerilog input from `MEM_stage.v' to AST representation.
+Generating RTLIL representation for module `\MEM_stage'.
+Successfully finished Verilog frontend.
+
+8. Executing Verilog-2005 frontend: MEM_stage_reg.v
+Parsing SystemVerilog input from `MEM_stage_reg.v' to AST representation.
+Generating RTLIL representation for module `\MEM_stage_reg'.
+Successfully finished Verilog frontend.
+
+9. Executing Verilog-2005 frontend: WB_stage.v
+Parsing SystemVerilog input from `WB_stage.v' to AST representation.
+Generating RTLIL representation for module `\WB_stage'.
+Successfully finished Verilog frontend.
+
+10. Executing Verilog-2005 frontend: alu.v
+Parsing SystemVerilog input from `alu.v' to AST representation.
+Generating RTLIL representation for module `\alu'.
+alu.v:29: Warning: Range select out of bounds on signal `\alu_result': Setting result bit to undef.
+alu.v:32: Warning: Range select out of bounds on signal `\alu_in_1': Setting result bit to undef.
+alu.v:32: Warning: Range select out of bounds on signal `\alu_in_2': Setting result bit to undef.
+alu.v:32: Warning: Range select out of bounds on signal `\alu_result': Setting result bit to undef.
+alu.v:33: Warning: Range select out of bounds on signal `\alu_in_1': Setting result bit to undef.
+alu.v:33: Warning: Range select out of bounds on signal `\alu_in_2': Setting result bit to undef.
+alu.v:33: Warning: Range select out of bounds on signal `\alu_result': Setting result bit to undef.
+alu.v:33: Warning: Range select out of bounds on signal `\alu_in_2': Setting result bit to undef.
+Successfully finished Verilog frontend.
+
+11. Executing Verilog-2005 frontend: arm16_top.v
+Parsing SystemVerilog input from `arm16_top.v' to AST representation.
+Generating RTLIL representation for module `\arm16_top'.
+Successfully finished Verilog frontend.
+
+12. Executing Verilog-2005 frontend: arm_processor.v
+Parsing SystemVerilog input from `arm_processor.v' to AST representation.
+Generating RTLIL representation for module `\arm_processor'.
+Successfully finished Verilog frontend.
+
+13. Executing Verilog-2005 frontend: condition_check.v
+Parsing SystemVerilog input from `condition_check.v' to AST representation.
+Generating RTLIL representation for module `\condition_check'.
+Successfully finished Verilog frontend.
+
+14. Executing Verilog-2005 frontend: control_unit.v
+Parsing SystemVerilog input from `control_unit.v' to AST representation.
+Generating RTLIL representation for module `\control_unit'.
+Successfully finished Verilog frontend.
+
+15. Executing Verilog-2005 frontend: forwarding_unit.v
+Parsing SystemVerilog input from `forwarding_unit.v' to AST representation.
+Generating RTLIL representation for module `\forwarding_unit'.
+Successfully finished Verilog frontend.
+
+16. Executing Verilog-2005 frontend: hazard_detection.v
+Parsing SystemVerilog input from `hazard_detection.v' to AST representation.
+Generating RTLIL representation for module `\hazard_detection'.
+Successfully finished Verilog frontend.
+
+17. Executing Verilog-2005 frontend: qspi_master.v
+Parsing SystemVerilog input from `qspi_master.v' to AST representation.
+Generating RTLIL representation for module `\qspi_master'.
+Successfully finished Verilog frontend.
+
+18. Executing Verilog-2005 frontend: register_file.v
+Parsing SystemVerilog input from `register_file.v' to AST representation.
+Generating RTLIL representation for module `\register_file'.
+Successfully finished Verilog frontend.
+
+19. Executing Verilog-2005 frontend: status_register.v
+Parsing SystemVerilog input from `status_register.v' to AST representation.
+Generating RTLIL representation for module `\status_register'.
+Successfully finished Verilog frontend.
+
+20. Executing Verilog-2005 frontend: val2_generator.v
+Parsing SystemVerilog input from `val2_generator.v' to AST representation.
+Generating RTLIL representation for module `\val2_generator'.
+Successfully finished Verilog frontend.
+
+21. Executing HIERARCHY pass (managing design hierarchy).
+
+21.1. Analyzing design hierarchy..
+Top module:  \qspi_master
+
+21.2. Analyzing design hierarchy..
+Top module:  \qspi_master
+Removing unused module `\val2_generator'.
+Removing unused module `\status_register'.
+Removing unused module `\register_file'.
+Removing unused module `\hazard_detection'.
+Removing unused module `\forwarding_unit'.
+Removing unused module `\control_unit'.
+Removing unused module `\condition_check'.
+Removing unused module `\arm_processor'.
+Removing unused module `\arm16_top'.
+Removing unused module `\alu'.
+Removing unused module `\WB_stage'.
+Removing unused module `\MEM_stage_reg'.
+Removing unused module `\MEM_stage'.
+Removing unused module `\IF_stage_reg'.
+Removing unused module `\IF_stage'.
+Removing unused module `\ID_stage_reg'.
+Removing unused module `\ID_stage'.
+Removing unused module `\EXE_stage_reg'.
+Removing unused module `\EXE_stage'.
+Removed 19 unused modules.
+
+22. Executing FLATTEN pass (flatten design).
+
+23. Executing PROC pass (convert processes to netlists).
+
+23.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+23.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Marked 4 switch rules as full_case in process $proc$qspi_master.v:40$200 in module qspi_master.
+Removed a total of 0 dead cases.
+
+23.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 2 redundant assignments.
+Promoted 0 assignments to connections.
+
+23.4. Executing PROC_INIT pass (extract init attributes).
+
+23.5. Executing PROC_ARST pass (detect async resets in processes).
+
+23.6. Executing PROC_ROM pass (convert switches to ROMs).
+Converted 0 switches.
+<suppressed ~11 debug messages>
+
+23.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\qspi_master.$proc$qspi_master.v:40$200'.
+     1/15: $0\data_ready_out[0:0]
+     2/15: $0\instr_ready_out[0:0]
+     3/15: $0\is_write[0:0]
+     4/15: $0\is_instr[0:0]
+     5/15: $0\rxreg[31:0]
+     6/15: $0\shifter[31:0]
+     7/15: $0\bitcnt[5:0]
+     8/15: $0\state[2:0]
+     9/15: $0\qspi_dq_oe_out[3:0]
+    10/15: $0\qspi_cs_ram_n_out[0:0]
+    11/15: $0\qspi_cs_flash_n_out[0:0]
+    12/15: $0\qspi_clk_out[0:0]
+    13/15: $0\data_rdata_out[15:0]
+    14/15: $0\instr_data_out[31:0]
+    15/15: $0\dq_o[3:0]
+
+23.8. Executing PROC_DLATCH pass (convert process syncs to latches).
+
+23.9. Executing PROC_DFF pass (convert process syncs to FFs).
+Creating register for signal `\qspi_master.\dq_o' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$498' with positive edge clock.
+Creating register for signal `\qspi_master.\instr_data_out' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$499' with positive edge clock.
+Creating register for signal `\qspi_master.\instr_ready_out' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$500' with positive edge clock.
+Creating register for signal `\qspi_master.\data_rdata_out' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$501' with positive edge clock.
+Creating register for signal `\qspi_master.\data_ready_out' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$502' with positive edge clock.
+Creating register for signal `\qspi_master.\qspi_clk_out' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$503' with positive edge clock.
+Creating register for signal `\qspi_master.\qspi_cs_flash_n_out' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$504' with positive edge clock.
+Creating register for signal `\qspi_master.\qspi_cs_ram_n_out' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$505' with positive edge clock.
+Creating register for signal `\qspi_master.\qspi_dq_oe_out' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$506' with positive edge clock.
+Creating register for signal `\qspi_master.\state' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$507' with positive edge clock.
+Creating register for signal `\qspi_master.\bitcnt' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$508' with positive edge clock.
+Creating register for signal `\qspi_master.\shifter' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$509' with positive edge clock.
+Creating register for signal `\qspi_master.\rxreg' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$510' with positive edge clock.
+Creating register for signal `\qspi_master.\is_instr' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$511' with positive edge clock.
+Creating register for signal `\qspi_master.\is_write' using process `\qspi_master.$proc$qspi_master.v:40$200'.
+  created $dff cell `$procdff$512' with positive edge clock.
+
+23.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+23.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Found and cleaned up 11 empty switches in `\qspi_master.$proc$qspi_master.v:40$200'.
+Removing empty process `qspi_master.$proc$qspi_master.v:40$200'.
+Cleaned up 11 empty switches.
+
+23.12. Executing OPT_EXPR pass (perform const folding).
+Optimizing module qspi_master.
+<suppressed ~9 debug messages>
+
+24. Executing MEMORY pass.
+
+24.1. Executing OPT_MEM pass (optimize memories).
+Performed a total of 0 transformations.
+
+24.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+Performed a total of 0 transformations.
+
+24.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+
+24.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
+
+24.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+
+24.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \qspi_master..
+Removed 0 unused cells and 63 unused wires.
+<suppressed ~1 debug messages>
+
+24.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+
+24.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+Performed a total of 0 transformations.
+
+24.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \qspi_master..
+
+24.10. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+24.11. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+25. Executing OPT pass (performing simple optimizations).
+
+25.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module qspi_master.
+
+25.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\qspi_master'.
+Computing hashes of 130 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 95 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 91 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+<suppressed ~117 debug messages>
+Removed a total of 39 cells.
+
+25.3. Executing OPT_DFF pass (perform DFF optimizations).
+Adding SRST signal on $procdff$510 ($dff) from module qspi_master (D = $procmux$350_Y, Q = \rxreg, rval = 0).
+Adding EN signal on $auto$ff.cc:337:slice$513 ($sdff) from module qspi_master (D = { \rxreg [27:0] \qspi_dq_in }, Q = \rxreg).
+Adding SRST signal on $procdff$511 ($dff) from module qspi_master (D = $procmux$341_Y, Q = \is_instr, rval = 1'0).
+Adding EN signal on $auto$ff.cc:337:slice$517 ($sdff) from module qspi_master (D = $procmux$339_Y, Q = \is_instr).
+Adding SRST signal on $procdff$512 ($dff) from module qspi_master (D = $procmux$326_Y, Q = \is_write, rval = 1'0).
+Adding EN signal on $auto$ff.cc:337:slice$523 ($sdff) from module qspi_master (D = $procmux$324_Y, Q = \is_write).
+Adding SRST signal on $procdff$509 ($dff) from module qspi_master (D = $procmux$361_Y, Q = \shifter, rval = 0).
+Adding EN signal on $auto$ff.cc:337:slice$529 ($sdff) from module qspi_master (D = $procmux$361_Y, Q = \shifter).
+Adding SRST signal on $procdff$498 ($dff) from module qspi_master (D = $procmux$493_Y, Q = \dq_o, rval = 4'0000).
+Adding EN signal on $auto$ff.cc:337:slice$539 ($sdff) from module qspi_master (D = \shifter [31:28], Q = \dq_o).
+Adding SRST signal on $procdff$499 ($dff) from module qspi_master (D = $procmux$482_Y, Q = \instr_data_out, rval = 0).
+Adding EN signal on $auto$ff.cc:337:slice$543 ($sdff) from module qspi_master (D = \rxreg, Q = \instr_data_out).
+Adding SRST signal on $procdff$500 ($dff) from module qspi_master (D = $procmux$309_Y, Q = \instr_ready_out, rval = 1'0).
+Adding SRST signal on $procdff$501 ($dff) from module qspi_master (D = $procmux$473_Y, Q = \data_rdata_out, rval = 16'0000000000000000).
+Adding EN signal on $auto$ff.cc:337:slice$552 ($sdff) from module qspi_master (D = \rxreg [15:0], Q = \data_rdata_out).
+Adding SRST signal on $procdff$502 ($dff) from module qspi_master (D = $procmux$300_Y, Q = \data_ready_out, rval = 1'0).
+Adding SRST signal on $procdff$503 ($dff) from module qspi_master (D = $procmux$460_Y, Q = \qspi_clk_out, rval = 1'0).
+Adding EN signal on $auto$ff.cc:337:slice$563 ($sdff) from module qspi_master (D = $procmux$460_Y, Q = \qspi_clk_out).
+Adding SRST signal on $procdff$504 ($dff) from module qspi_master (D = $procmux$450_Y, Q = \qspi_cs_flash_n_out, rval = 1'1).
+Adding EN signal on $auto$ff.cc:337:slice$567 ($sdff) from module qspi_master (D = $procmux$450_Y, Q = \qspi_cs_flash_n_out).
+Adding SRST signal on $procdff$505 ($dff) from module qspi_master (D = $procmux$438_Y, Q = \qspi_cs_ram_n_out, rval = 1'1).
+Adding EN signal on $auto$ff.cc:337:slice$575 ($sdff) from module qspi_master (D = $procmux$438_Y, Q = \qspi_cs_ram_n_out).
+Adding SRST signal on $procdff$506 ($dff) from module qspi_master (D = $procmux$425_Y, Q = \qspi_dq_oe_out, rval = 4'0000).
+Adding EN signal on $auto$ff.cc:337:slice$585 ($sdff) from module qspi_master (D = $procmux$425_Y, Q = \qspi_dq_oe_out).
+Adding SRST signal on $procdff$507 ($dff) from module qspi_master (D = $procmux$403_Y, Q = \state, rval = 3'000).
+Adding EN signal on $auto$ff.cc:337:slice$593 ($sdff) from module qspi_master (D = $procmux$403_Y, Q = \state).
+Adding SRST signal on $procdff$508 ($dff) from module qspi_master (D = $procmux$376_Y, Q = \bitcnt, rval = 6'000000).
+Adding EN signal on $auto$ff.cc:337:slice$611 ($sdff) from module qspi_master (D = $procmux$376_Y, Q = \bitcnt).
+
+25.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \qspi_master..
+Removed 27 unused cells and 62 unused wires.
+<suppressed ~28 debug messages>
+
+25.5. Rerunning OPT passes. (Removed registers in this run.)
+
+25.6. Executing OPT_EXPR pass (perform const folding).
+Optimizing module qspi_master.
+<suppressed ~8 debug messages>
+
+25.7. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\qspi_master'.
+Computing hashes of 106 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 95 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 93 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+<suppressed ~39 debug messages>
+Removed a total of 13 cells.
+
+25.8. Executing OPT_DFF pass (perform DFF optimizations).
+
+25.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \qspi_master..
+Removed 0 unused cells and 13 unused wires.
+<suppressed ~1 debug messages>
+
+25.10. Finished fast OPT passes.
+
+26. Executing TECHMAP pass (map to technology primitives).
+
+26.1. Executing Verilog-2005 frontend: /home/moein/oss-cad-suite/lib/../share/yosys/techmap.v
+Parsing Verilog input from `/home/moein/oss-cad-suite/lib/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `$__div_mod_u'.
+Generating RTLIL representation for module `$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Generating RTLIL representation for module `$connect'.
+Generating RTLIL representation for module `$input_port'.
+Successfully finished Verilog frontend.
+
+26.2. Continuing TECHMAP pass.
+Using extmapper simplemap for cells of type $reduce_and.
+Using extmapper simplemap for cells of type $reduce_bool.
+Using extmapper simplemap for cells of type $sdffe.
+Using extmapper simplemap for cells of type $ne.
+Using extmapper simplemap for cells of type $sdff.
+Using extmapper simplemap for cells of type $not.
+Using extmapper simplemap for cells of type $reduce_or.
+Using extmapper simplemap for cells of type $or.
+Using extmapper simplemap for cells of type $mux.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=32:B_WIDTH=32:A_WIDTH=6:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=32:B_WIDTH=32:A_WIDTH=6:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=32:B_WIDTH=32:A_WIDTH=6:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using extmapper simplemap for cells of type $eq.
+Using extmapper simplemap for cells of type $pmux.
+Using extmapper simplemap for cells of type $logic_not.
+Using template $paramod$ae0147484b1ff1c0caf19799670ecd3c54c1601d\_90_alu for cells of type $alu.
+Using extmapper simplemap for cells of type $pos.
+Using template $paramod\_90_fa\WIDTH=32'00000000000000000000000000100000 for cells of type $fa.
+Using template $paramod\_90_lcu_brent_kung\WIDTH=32'00000000000000000000000000100000 for cells of type $lcu.
+Using extmapper simplemap for cells of type $xor.
+Using extmapper simplemap for cells of type $and.
+No more expansions possible.
+<suppressed ~509 debug messages>
+
+27. Executing OPT pass (performing simple optimizations).
+
+27.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module qspi_master.
+<suppressed ~498 debug messages>
+
+27.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\qspi_master'.
+Computing hashes of 696 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 605 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 561 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 531 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 525 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 519 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 513 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 510 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 507 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 504 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 501 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 498 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 495 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+Computing hashes of 492 cells of `\qspi_master'.
+Finding duplicate cells in `\qspi_master'.
+<suppressed ~612 debug messages>
+Removed a total of 204 cells.
+
+27.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+27.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \qspi_master..
+Removed 6 unused cells and 359 unused wires.
+<suppressed ~7 debug messages>
+
+27.5. Finished fast OPT passes.
+
+28. Executing DFFLIBMAP pass (mapping DFF cells to sequential cells from liberty file).
+  cell sky130_fd_sc_hd__dfxtp_1 (noninv, pins=3, area=20.02) is a direct match for cell type $_DFF_P_.
+  cell sky130_fd_sc_hd__dfrtn_1 (noninv, pins=4, area=25.02) is a direct match for cell type $_DFF_NN0_.
+  cell sky130_fd_sc_hd__dfrtp_1 (noninv, pins=4, area=25.02) is a direct match for cell type $_DFF_PN0_.
+  cell sky130_fd_sc_hd__dfstp_2 (noninv, pins=4, area=26.28) is a direct match for cell type $_DFF_PN1_.
+  cell sky130_fd_sc_hd__edfxtp_1 (noninv, pins=4, area=30.03) is a direct match for cell type $_DFFE_PP_.
+  cell sky130_fd_sc_hd__dfbbn_1 (noninv, pins=6, area=32.53) is a direct match for cell type $_DFFSR_NNN_.
+  cell sky130_fd_sc_hd__dfbbp_1 (noninv, pins=6, area=32.53) is a direct match for cell type $_DFFSR_PNN_.
+  final dff cell mappings:
+    unmapped dff cell: $_DFF_N_
+    \sky130_fd_sc_hd__dfxtp_1 _DFF_P_ (.CLK( C), .D( D), .Q( Q));
+    \sky130_fd_sc_hd__dfrtn_1 _DFF_NN0_ (.CLK_N( C), .D( D), .Q( Q), .RESET_B( R));
+    unmapped dff cell: $_DFF_NN1_
+    unmapped dff cell: $_DFF_NP0_
+    unmapped dff cell: $_DFF_NP1_
+    \sky130_fd_sc_hd__dfrtp_1 _DFF_PN0_ (.CLK( C), .D( D), .Q( Q), .RESET_B( R));
+    \sky130_fd_sc_hd__dfstp_2 _DFF_PN1_ (.CLK( C), .D( D), .Q( Q), .SET_B( R));
+    unmapped dff cell: $_DFF_PP0_
+    unmapped dff cell: $_DFF_PP1_
+    unmapped dff cell: $_DFFE_NN_
+    unmapped dff cell: $_DFFE_NP_
+    unmapped dff cell: $_DFFE_PN_
+    \sky130_fd_sc_hd__edfxtp_1 _DFFE_PP_ (.CLK( C), .D( D), .DE( E), .Q( Q));
+    \sky130_fd_sc_hd__dfbbn_1 _DFFSR_NNN_ (.CLK_N( C), .D( D), .Q( Q), .Q_N(~Q), .RESET_B( R), .SET_B( S));
+    unmapped dff cell: $_DFFSR_NNP_
+    unmapped dff cell: $_DFFSR_NPN_
+    unmapped dff cell: $_DFFSR_NPP_
+    \sky130_fd_sc_hd__dfbbp_1 _DFFSR_PNN_ (.CLK( C), .D( D), .Q( Q), .Q_N(~Q), .RESET_B( R), .SET_B( S));
+    unmapped dff cell: $_DFFSR_PNP_
+    unmapped dff cell: $_DFFSR_PPN_
+    unmapped dff cell: $_DFFSR_PPP_
+
+28.1. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+<suppressed ~24 debug messages>
+Mapping DFF cells in module `\qspi_master':
+  mapped 127 $_DFF_P_ cells to \sky130_fd_sc_hd__dfxtp_1 cells.
+
+29. Executing ABC pass (technology mapping using ABC).
+
+29.1. Extracting gate netlist of module `\qspi_master' to `<abc-temp-dir>/input.blif'..
+ABC: using cached merged SCL: /tmp/yosys-liberty-scl-cache/yosys_merged_26d78acf.scl (1 files)
+Replacing 99 occurrences of constant undef bits with constant zero bits
+
+29.1.1. Executed ABC.
+Extracted 611 gates and 779 wires to a netlist network with 165 inputs and 127 outputs.
+Running ABC script: <abc-temp-dir>/abc.script
+ABC: UC Berkeley, ABC 1.01 (compiled Jul 16 2026 03:52:11)
+ABC: abc 01> empty
+ABC: abc 01> source <abc-temp-dir>/abc.script
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_scl /tmp/yosys-liberty-scl-cache/yosys_merged_26d78acf.scl 
+ABC: Warning: Detected 9 multi-output cells (for example, "sky130_fd_sc_hd__fa_1").
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &fraig -x 
+ABC: + &put 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+ABC: 
+ABC: YOSYS_ABC_DONE 
+
+29.1.2. Re-integrating ABC results.
+ABC RESULTS:   sky130_fd_sc_hd__a211oi_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__a21oi_1 cells:      105
+ABC RESULTS:   sky130_fd_sc_hd__a221oi_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__a222oi_1 cells:       14
+ABC RESULTS:   sky130_fd_sc_hd__a22oi_1 cells:       11
+ABC RESULTS:   sky130_fd_sc_hd__a2bb2oi_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__a31oi_1 cells:        8
+ABC RESULTS:   sky130_fd_sc_hd__a41oi_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__and2_0 cells:        3
+ABC RESULTS:   sky130_fd_sc_hd__and3_1 cells:        2
+ABC RESULTS:   sky130_fd_sc_hd__and3b_1 cells:        2
+ABC RESULTS:   sky130_fd_sc_hd__clkinv_1 cells:        3
+ABC RESULTS:   sky130_fd_sc_hd__lpflow_inputiso1p_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__mux2i_1 cells:        4
+ABC RESULTS:   sky130_fd_sc_hd__nand2_1 cells:      186
+ABC RESULTS:   sky130_fd_sc_hd__nand3_1 cells:        3
+ABC RESULTS:   sky130_fd_sc_hd__nand3b_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__nand4_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__nor2_1 cells:       26
+ABC RESULTS:   sky130_fd_sc_hd__nor3_1 cells:        4
+ABC RESULTS:   sky130_fd_sc_hd__nor4_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__o211ai_1 cells:        2
+ABC RESULTS:   sky130_fd_sc_hd__o21ai_0 cells:       11
+ABC RESULTS:   sky130_fd_sc_hd__o31a_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__o31ai_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__or3_1 cells:        3
+ABC RESULTS:   sky130_fd_sc_hd__or4_1 cells:        2
+ABC RESULTS:   sky130_fd_sc_hd__xnor2_1 cells:        1
+ABC RESULTS:        internal signals:      487
+ABC RESULTS:           input signals:      165
+ABC RESULTS:          output signals:      127
+Removing temp directory.
+Removing global temp directory.
+
+30. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \qspi_master..
+Removed 0 unused cells and 639 unused wires.
+<suppressed ~1 debug messages>
+
+31. Printing statistics.
+
+=== qspi_master ===
+
+        +----------Local Count, excluding submodules.
+        |        +-Local Area, excluding submodules.
+        |        | 
+      425        - wires
+      597        - wire bits
+       25        - public wires
+      197        - public wire bits
+       18        - ports
+      118        - port bits
+      527 4.46E+03 cells
+        1    7.507   sky130_fd_sc_hd__a211oi_1
+      105  525.504   sky130_fd_sc_hd__a21oi_1
+        1    8.758   sky130_fd_sc_hd__a221oi_1
+       14  140.134   sky130_fd_sc_hd__a222oi_1
+       11   82.579   sky130_fd_sc_hd__a22oi_1
+        1    8.758   sky130_fd_sc_hd__a2bb2oi_1
+        8   50.048   sky130_fd_sc_hd__a31oi_1
+        1    8.758   sky130_fd_sc_hd__a41oi_1
+        3   18.768   sky130_fd_sc_hd__and2_0
+        2   12.512   sky130_fd_sc_hd__and3_1
+        2   17.517   sky130_fd_sc_hd__and3b_1
+        3   11.261   sky130_fd_sc_hd__clkinv_1
+      127 2.54E+03   sky130_fd_sc_hd__dfxtp_1
+        1    6.256   sky130_fd_sc_hd__lpflow_inputiso1p_1
+        4   40.038   sky130_fd_sc_hd__mux2i_1
+      186   698.17   sky130_fd_sc_hd__nand2_1
+        3   15.014   sky130_fd_sc_hd__nand3_1
+        1    7.507   sky130_fd_sc_hd__nand3b_1
+        1    6.256   sky130_fd_sc_hd__nand4_1
+       26   97.594   sky130_fd_sc_hd__nor2_1
+        4   20.019   sky130_fd_sc_hd__nor3_1
+        1    6.256   sky130_fd_sc_hd__nor4_1
+        2   15.014   sky130_fd_sc_hd__o211ai_1
+       11   55.053   sky130_fd_sc_hd__o21ai_0
+        1    8.758   sky130_fd_sc_hd__o31a_1
+        1    7.507   sky130_fd_sc_hd__o31ai_1
+        3   18.768   sky130_fd_sc_hd__or3_1
+        2   15.014   sky130_fd_sc_hd__or4_1
+        1    8.758   sky130_fd_sc_hd__xnor2_1
+
+   Chip area for module '\qspi_master': 4460.528000
+     of which used for sequential elements: 2542.438400 (57.00%)
+
+Warnings: 3 unique messages, 8 total
+End of script. Logfile hash: 46bfc0365c, time: 0.26s, user: 0.15s, system: 0.02s, MEM: 46.50 MB peak
+Yosys 0.67+40 (git sha1 45ea2b8d6-dirty, Release, Clang /usr/bin/clang++ 18.1.8)
+Time spent: 42% 1x abc (0 sec), 18% 1x stat (0 sec), ...

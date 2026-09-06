@@ -1,0 +1,55 @@
+
+Instruction-fetch latency model for arm16 on a TinyTapeout 2x2 tile.
+
+Question: which external memory is faster as instruction/data store, and by how much.
+Every constant is labelled with its source. Change a constant, rerun, get the table.
+
+Cycle counts come from the datasheets (evidence/agent_qspi_pmod_spec.md, section 5):
+  W25Q128JV        Winbond  W25Q128JV Rev H / W25Q128JV-DTR Rev B
+  APS6404L-3SQR    AP Memory Rev 2.1
+  23LC512 protocol Microchip (the RP2 spi-ram-emu emulates it)
+
+Definitions
+  SCK     the serial clock our chip drives on the memory bus
+  core    the ASIC project clock
+  ratio   core cycles per SCK cycle: 2 for a toggle flip-flop, 1 for a forwarded clock
+  fetch   one 32-bit ARM instruction, stored as two 16-bit words = 4 bytes
+
+
+====================================================================================================
+core 25 MHz, SCK = core/2 = 12.50 MHz  pad: OK  full-period sample margin: 51 ns     (SCK cycles | core cycles | MIPS)
+====================================================================================================
+bus                                                per-access       continuous        streaming
+----------------------------------------------------------------------------------------------------
+RP2 spi-ram-emu, 23LC512 03h (SPI x1)          56 |  112 | 0.22              n/a   32 |   64 | 0.39
+Pmod flash W25Q128, EBh SPI-mode quad I/O      28 |   56 | 0.45   20 |   40 | 0.62    8 |   16 | 1.56
+Pmod flash W25Q128, EBh QPI-mode D=2           18 |   36 | 0.69   16 |   32 | 0.78    8 |   16 | 1.56
+Pmod PSRAM APS6404L, EBh SPI-mode              28 |   56 | 0.45              n/a    8 |   16 | 1.56
+Pmod PSRAM APS6404L, 0Bh QPI-mode              20 |   40 | 0.62              n/a    8 |   16 | 1.56
+
+streaming = CS held low, sequential addresses, no preamble; a branch pays per-access again.
+PSRAM streaming is bounded by tCEM = 8 us: [EBh SPI-mode: 100 SCK per window, 10 x 32-bit] [0Bh QPI-mode: 100 SCK per window, 11 x 32-bit] 
+
+====================================================================================================
+core 25 MHz, SCK = core/1 = 25.00 MHz  pad: OK  full-period sample margin: 11 ns     (SCK cycles | core cycles | MIPS)
+====================================================================================================
+bus                                                per-access       continuous        streaming
+----------------------------------------------------------------------------------------------------
+RP2 spi-ram-emu, 23LC512 03h (SPI x1)          56 |   56 | 0.45              n/a   32 |   32 | 0.78  ** over device SCK cap **
+Pmod flash W25Q128, EBh SPI-mode quad I/O      28 |   28 | 0.89   20 |   20 | 1.25    8 |    8 | 3.12
+Pmod flash W25Q128, EBh QPI-mode D=2           18 |   18 | 1.39   16 |   16 | 1.56    8 |    8 | 3.12
+Pmod PSRAM APS6404L, EBh SPI-mode              28 |   28 | 0.89              n/a    8 |    8 | 3.12
+Pmod PSRAM APS6404L, 0Bh QPI-mode              20 |   20 | 1.25              n/a    8 |    8 | 3.12
+
+streaming = CS held low, sequential addresses, no preamble; a branch pays per-access again.
+PSRAM streaming is bounded by tCEM = 8 us: [EBh SPI-mode: 200 SCK per window, 22 x 32-bit] [0Bh QPI-mode: 200 SCK per window, 23 x 32-bit] 
+
+16-bit DATA access, per-access, SCK = core/2
+bus                                            SCK   core
+RP2 spi-ram-emu, 23LC512 03h (SPI x1)           40     80
+Pmod flash W25Q128, EBh SPI-mode quad I/O       24     48
+Pmod flash W25Q128, EBh QPI-mode D=2            14     28
+Pmod PSRAM APS6404L, EBh SPI-mode               24     48
+Pmod PSRAM APS6404L, 0Bh QPI-mode               16     32
+
+Probe RTL as written: per-access, SCK = core/2, and a wrong pin map (see REPORT.md).

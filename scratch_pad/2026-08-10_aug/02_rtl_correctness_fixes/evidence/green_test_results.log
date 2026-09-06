@@ -1,0 +1,38 @@
+Command:
+scratch_pad/2026-08-10_aug/02_rtl_correctness_fixes/scripts/run_bug_regression_tests.sh
+
+Tool:
+Icarus Verilog 13.0 development build
+
+Source identity:
+- Baseline commit: `e7a380ac02eb5941fde141f067f95f2a74981eae`
+- Tracked RTL diff SHA-256: `d378b9883f4e6c8fed9b2855bf6708f24d4451da6a2144fb6ed167d8965868bb`
+
+Result:
+PASS, exit status 0.
+All three directed testbenches compiled and completed.
+Icarus reported the existing missing-time-unit warnings.
+
+arm-base:
+- 16 directed checks passed.
+- The testbench called `$finish` at 46000 ps.
+
+arm-forwarding:
+- 21 directed checks passed.
+- The testbench called `$finish` at 56000 ps.
+
+arm-cache:
+- 26 directed checks passed.
+- The testbench called `$finish` at 76000 ps.
+
+The passing checks cover:
+- All four `LS` combinations of C and Z.
+- Carry preservation for MOV and ORR.
+- Carry preservation for NOP and the default command path.
+- The zero-carry result of ADD 1 plus 1.
+- LDR and branch status-update gating.
+- The valid ADDS status update.
+- The EXE load-use stall and two negative hazard cases.
+- The decoded LDR source count.
+- Branch priority, freeze hold, and PC resume behavior.
+- The cache wait, EXE branch collision, pipeline flush, target hold, and PC resume behavior.

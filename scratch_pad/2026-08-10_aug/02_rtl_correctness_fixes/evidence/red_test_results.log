@@ -1,0 +1,52 @@
+Command:
+scratch_pad/2026-08-10_aug/02_rtl_correctness_fixes/scripts/run_bug_regression_tests.sh
+
+Source revision:
+Original commit `e7a380ac02eb5941fde141f067f95f2a74981eae`.
+The final test files were copied into an isolated export of this commit.
+
+Tool:
+Icarus Verilog 13.0 development build
+
+Result:
+Expected failure, exit status 1.
+All three directed testbenches compiled.
+Icarus reported the existing missing-time-unit warnings.
+
+arm-base failures: 9
+- LS is true when C=0 and Z=0
+- LS is true when C=1 and Z=1
+- MOV preserves input carry zero
+- ORR preserves input carry one
+- LDR does not update status flags
+- branch immediate bit 20 does not update status flags
+- branch address has priority over a simultaneous freeze
+- freeze holds the branch target
+- PC resumes after the freeze ends
+
+arm-forwarding failures: 13
+- The nine arm-base failures
+- NOP preserves input carry one
+- LDR offset bits do not create a false source-two hazard
+- dependent instruction stalls while its load is in EXE
+- a load in MEM does not cause a late forwarding stall
+
+arm-cache failures: 16
+- The thirteen arm-forwarding failures
+- cache wait does not discard a simultaneous EXE branch
+- cache wait holds the processor branch target
+- processor PC resumes after the cache wait ends
+
+Passing controls on the original RTL:
+- LS is true when C=0 and Z=1.
+- LS is false when C=1 and Z=0.
+- ADD produces carry zero.
+- The default ALU command preserves input carry zero after the prior ADD.
+- LDR keeps its write and memory-read controls.
+- The branch instruction remains accepted.
+- ADDS updates status flags.
+- An independent instruction does not stall for an EXE load.
+- The cache collision flushes the IF-to-ID and ID-to-EXE registers.
+
+The branch hold and resume checks fail after the wrong target is held.
+They are sequence checks for the corrected priority behavior.
