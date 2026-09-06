@@ -1,6 +1,6 @@
 # ttsky26c-arm16 tasks
 
-> **File:** `tasks/todo.md`. **Last regenerated:** 2026-09-06 (gate level green on the run-3 netlist after the X-safe models; STA counts dispositioned; the push and the CI watch next). **Open tasks:** 4. **Priority:** P1 highest, P4 parking.
+> **File:** `tasks/todo.md`. **Last regenerated:** 2026-09-06 (CI green on `2c546d4`: test, docs, gds with precheck 15 of 15 and gate level 11 of 11; the portal submission is next). **Open tasks:** 3. **Priority:** P1 highest, P4 parking.
 > Session history lives in the project journal; the board is `tasks/STATE.md`.
 
 ## Constraints
@@ -13,18 +13,14 @@
 
 ## Open tasks
 
-#### P1 · 2026-09-07 · Push and watch the CI, verify the artifacts
-The suite and the gate-level replay on the run-3 netlist are green (51 pass, 1 skip at RTL; 11 of 11 runnable
-tests at gate level). `gh repo create moein-maleki/ttsky26c-arm16 --public`, `git push -u origin main`, watch
-the `test`, `docs` and `gds` workflows (`gh run watch`), download the artifacts and run
-`scripts/verify_ci_artifacts.sh`. Watch for the local simulator's teardown segfault on the CI's Icarus 12 and
-cocotb 2.0.1: the `test` job fails on a missing `results.xml`. Plan Task 9 in
-`scratch_pad/2026-09-06_sep/02_rtl_sprint/PLAN.md`.
-
-#### P2 · 2026-09-07 · Submit the 2x2 on the portal after the CI is green
-The user's action (app.tinytapeout.com). The report names the commit to select. Order one QSPI Pmod and one
-TinyVGA Pmod (store.tinytapeout.com); cut jumpers JP2 to JP9 before the first run; set the flash
-quad-enable bit once at bring-up (spec 15).
+#### P1 · 2026-09-07 · Submit the 2x2 on the portal: `2c546d4`, gds run 34042870023
+The user's action (app.tinytapeout.com, before 2026-09-07 20:00 UTC): repository
+`https://github.com/moein-maleki/ttsky26c-arm16`, commit `2c546d4`, the gds run
+`https://github.com/moein-maleki/ttsky26c-arm16/actions/runs/34042870023` (all three workflows green; the
+artifacts verified in `scratch_pad/2026-09-06_sep/02_rtl_sprint/evidence/ci/run2_2c546d4_34042870023/`). A
+later docs-only push starts an identical gds run; submit when the latest gds run is green. Then order one
+QSPI Pmod and one TinyVGA Pmod (store.tinytapeout.com); cut jumpers JP2 to JP9 before the first run; set the
+flash quad-enable bit once at bring-up (spec 15).
 
 #### P3 · 2026-09-07 · Codex review 3 on the final state
 Reviews 1 and 2 are applied (`scratch_pad/2026-09-06_sep/02_rtl_sprint/reviews/`). A third pass on the
@@ -36,6 +32,9 @@ Same RTL, golden model, tests and programs as v1. Track decision first. **Sky130
 ## Completed
 
 ### RTL sprint (2026-09-06)
+- [x] Pushed and CI green on `2c546d4`: test 51 pass, docs, gds with precheck 15 of 15, gate level 11 of 11 and the
+      viewer; artifact verifier PASS on both gds runs; the CI metrics equal local run 3. Round 1 had failed on the
+      template's `grep failure results.xml` matching a test name (renamed) and on the missing Pages site (enabled).
 - [x] Gate level on the run-3 netlist: 11 of 11 runnable tests pass after the memory models became X-safe (an X
       on a chip select in a BAD strap setting had crashed the bus monitor); the delay sweep reproduces the
       predicted table at RTL and at gate level.

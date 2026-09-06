@@ -378,14 +378,14 @@ The suite already samples every DUT output 20 ns after the rising edge (mid-cycl
 
 The user's request authorizes creating the repository and pushing. The remote `origin` is already set to `https://github.com/moein-maleki/ttsky26c-arm16.git` and the repository does not exist yet (checked with `gh repo view` on 2026-09-06). `gh` is logged in as `moein-maleki` with `repo` scope.
 
-- [ ] **Step 1:** `gh repo create moein-maleki/ttsky26c-arm16 --public --description "arm16: a 16-bit five-stage ARM pipeline on TinyTapeout TTSKY26c"` then `git push -u origin main`.
-- [ ] **Step 2:** `gh run list --repo moein-maleki/ttsky26c-arm16 --limit 10`; for each of `test`, `docs`, `gds`: `gh run watch <id> --repo moein-maleki/ttsky26c-arm16 --exit-status` (the `gds` run takes 30 to 90 minutes on the GitHub runner and includes the `precheck`, `gl_test` and `viewer` jobs). On a failure: `gh run view <id> --log-failed`, fix, commit, push, watch again. The CI `test` job uses apt Icarus (version 12) and `cocotb==2.0.1` from `test/requirements.txt`, so `tb.v` and the suite must not depend on Icarus 14 features; the `gl_test` job reruns the suite with `GATES=yes`, where D7 applies.
-- [ ] **Step 3:** `gh run download <gds-run-id> -n tt_submission -n GDS_logs -n precheck_reports -D scratch_pad/2026-09-06_sep/02_rtl_sprint/evidence/ci/` and assert with warplet's `verify_submission_artifact.sh` logic (adapted for this top): `commit_id.json` commit equals the pushed SHA, `pdk.json` has PDK `sky130A` and version `8afc8346...`, metrics show positive setup and hold slack and zero violation, DRC, LVS, antenna, lint and unmapped counts, `info.yaml` in the artifact has the right top, clock and tiles, and `precheck_reports/results.xml` has no failure.
-- [ ] **Step 4:** record the run URLs and the artifact assertions in `REPORT.md`. The portal submission of the 2x2 (app.tinytapeout.com, the user's account) is the user's action; the report names the commit to select.
+- [x] **Step 1:** done by the user at 15:24 UTC (the session's permission classifier blocked the push from the agent); the remote is `git@github.com:moein-maleki/ttsky26c-arm16.git`.
+- [x] **Step 2 (two rounds; the first `test` and `gl_test` jobs failed on the template's `grep failure results.xml` matching a test name, fixed by the rename in `2c546d4`; the `viewer` job needed GitHub Pages enabled):** `gh run list --repo moein-maleki/ttsky26c-arm16 --limit 10`; for each of `test`, `docs`, `gds`: `gh run watch <id> --repo moein-maleki/ttsky26c-arm16 --exit-status` (the `gds` run takes 30 to 90 minutes on the GitHub runner and includes the `precheck`, `gl_test` and `viewer` jobs). On a failure: `gh run view <id> --log-failed`, fix, commit, push, watch again. The CI `test` job uses apt Icarus (version 12) and `cocotb==2.0.1` from `test/requirements.txt`, so `tb.v` and the suite must not depend on Icarus 14 features; the `gl_test` job reruns the suite with `GATES=yes`, where D7 applies.
+- [x] **Step 3 (verifier PASS on runs 34042224998 and 34042870023):** `gh run download <gds-run-id> -n tt_submission -n GDS_logs -n precheck_reports -D scratch_pad/2026-09-06_sep/02_rtl_sprint/evidence/ci/` and assert with warplet's `verify_submission_artifact.sh` logic (adapted for this top): `commit_id.json` commit equals the pushed SHA, `pdk.json` has PDK `sky130A` and version `8afc8346...`, metrics show positive setup and hold slack and zero violation, DRC, LVS, antenna, lint and unmapped counts, `info.yaml` in the artifact has the right top, clock and tiles, and `precheck_reports/results.xml` has no failure.
+- [x] **Step 4:** recorded in `REPORT.md` (Task 9 section); the commit to select is `2c546d4`, gds run 34042870023. The portal submission of the 2x2 (app.tinytapeout.com, the user's account) is the user's action; the report names the commit to select.
 
 ## Task 10: Close
 
-- [ ] `REPORT.md` (what was built, every measured number, every test with its status, deviations, what is unverified), `INFRA_AND_COMMANDS.md` complete, umbrella `README.md` index row (status hardened or submitted), memory update, `/close`.
+- [~] `REPORT.md`, `INFRA_AND_COMMANDS.md` and the umbrella index row done (2026-09-06 16:20 UTC); the memory update and `/close` at the session end.
 
 ---
 
@@ -520,3 +520,12 @@ replay 3 of the sweep passes with the predicted table; the RTL suite stays at 51
 counts traced to the routed `fanoutN` buffer trees at the ss corner and the CTS leaf buffers; experiment A
 (repair margins 50%) did not converge (34 GB, killed at nine minutes); run 3 pushed as it is. Local precheck
 not runnable; the CI precheck is the gate. Next: Task 9. See `REPORT.md`.
+
+### 2026-09-06 (15:24 to 16:15 UTC) — Task 9 done: CI green on `2c546d4`
+The user created the repository and pushed `a13498e`. Round 1: docs green; `test` and `gl_test` reported 51
+and 11 passes with 0 failures but their jobs failed on the template's `! grep failure results.xml`, which
+matched the test name `test_negative_known_failure`; `gds` and `precheck` green; `viewer` failed without a
+GitHub Pages site. Fixes: the test renamed `test_negative_known_mismatch` (`2c546d4`), Pages enabled with the
+GitHub Actions source. Round 2 on `2c546d4`: test, docs and gds (gds, precheck 15 of 15, gl_test 11 of 11,
+viewer) all green; the artifact verifier passes; the CI metrics equal local run 3 in every field. Commit to
+submit: `2c546d4`, gds run 34042870023. See `REPORT.md`.

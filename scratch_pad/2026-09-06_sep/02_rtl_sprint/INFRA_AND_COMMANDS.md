@@ -37,10 +37,19 @@ bash $S/scripts/snapshot_harden.sh && python scripts/check_signoff.py runs/wokwi
 # gate level
 bash $S/scripts/run_gate_level.sh
 
-# CI artifacts after the push
-gh run download <gds-run-id> -n tt_submission -n GDS_logs -n precheck_reports -D $S/evidence/ci/
-bash scripts/verify_ci_artifacts.sh $S/evidence/ci <commit-sha> <gds-run-id>
+# CI after the push (2026-09-06; the repository was created and pushed by the user, gh logged in as moein-maleki)
+gh run list --repo moein-maleki/ttsky26c-arm16 --limit 10
+gh run watch <run-id> --repo moein-maleki/ttsky26c-arm16 --exit-status --interval 60      # one per run, in the background
+gh run view <run-id> --repo moein-maleki/ttsky26c-arm16 --log | grep -E 'TESTS='            # the cocotb verdict of test and gl_test
+gh run download <gds-run-id> --repo moein-maleki/ttsky26c-arm16 -n tt_submission -n GDS_logs -n precheck_reports -D <dir>
+bash scripts/verify_ci_artifacts.sh <dir> $(git rev-parse <commit>) <gds-run-id>              # PASS on runs 34042224998 and 34042870023
+gh api -X POST repos/moein-maleki/ttsky26c-arm16/pages -f build_type=workflow               # Pages for the viewer job (once)
 ```
+
+The CI `test` and `gl_test` jobs check `! grep failure results.xml`, so no test name may contain "failure".
+The CI's LibreLane was 3.0.5 (local 3.0.3); the metrics of both CI runs equal local run 3 in every field.
+Evidence per run: `evidence/ci/run<N>_<commit>_<run-id>/` (precheck results, commit_id, pdk, metrics, STA
+summary, verifier output). The GDS viewer: https://moein-maleki.github.io/ttsky26c-arm16/
 
 ## Measurements (synthesis estimate)
 

@@ -17,7 +17,7 @@
 | 6 harden | done three times, signoff clean; run 3 is on commit `a9bdd86` | `evidence/harden_20260906T101958Z` is the netlist to replay and push |
 | 7 gate level | done: on the run-3 netlist 11 of the 11 runnable tests pass (replay 2: 10 pass, the delay sweep failed on a harness gap; replay 3 after the X-safe models: the sweep passes with the predicted table) | `evidence/gate_level_run2_netlist3.log`, `evidence/gate_level_run3_netlist3_delay_sweep.log` |
 | 8 precheck, reviews | Codex reviews 1 and 2 applied; the local precheck cannot run (no `gdstk`, no `magic` outside Docker), so the CI precheck job is the gate; the STA design-rule counts are dispositioned below | `reviews/` |
-| 9 push, CI | repository created and `a13498e` pushed by the user at 15:24 UTC; docs green; test run 1: 51 pass, 0 fail, 1 skip on Icarus 12 and cocotb 2.0.1, step failed on the template's `grep failure results.xml` matching the test name `test_negative_known_failure` (renamed `test_negative_known_mismatch`); gds run 1 in progress; see the Task 9 section | the run URLs in the Task 9 section |
+| 9 push, CI | done: `2c546d4` is green on all three workflows (test 51 pass; docs; gds with precheck 15 of 15, gate level 11 of 11, viewer); artifacts verified; this is the commit to submit | `evidence/ci/run2_2c546d4_34042870023/`, the Task 9 section |
 
 ## Findings so far
 
@@ -137,7 +137,7 @@ are CTS's own leaf buffers, and a slow edge on a mux select at 25 MHz costs dela
 Recorded for v2: fewer high-fanout selects in the RTL (register-file read addresses, the freeze net), or a
 post-route repair when LibreLane offers a stable one.
 
-## State before the push (2026-09-06, 15:20 UTC)
+## State after the CI (2026-09-06, 16:15 UTC)
 
 - RTL suite green: 51 pass, 1 skip (test-ROM build) plus 14 pass (plain build with the shipped ROM);
   44 pytest. The delay sweep reproduces the predicted strap table exactly; 200 ROM-mode and 40 flash-fed
@@ -149,8 +149,8 @@ post-route repair when LibreLane offers a stable one.
 - Gate level: 11 of 11 runnable tests pass on the run-3 netlist (replays 2 and 3 above); the RTL suite on the
   X-safe models is 51 pass, 1 skip. The RTL of `a9bdd86` is unchanged; this commit changes `test/` and the
   scratch_pad only, so the CI hardens the same RTL as run 3.
-- Next: Task 9 (create the repository, push, watch the `test`, `docs` and `gds` workflows, verify the
-  artifacts), then the portal submission (the user).
+- Pushed: `github.com/moein-maleki/ttsky26c-arm16`, `main` at `2c546d4`, all three workflows green, artifacts
+  verified. Next: the portal submission of `2c546d4` (the user), then the Pmods and the bring-up.
 
 ## Task 9: push and CI (2026-09-06)
 
@@ -161,4 +161,14 @@ classifier of the session blocked the push from the agent; the remote is SSH now
 |---|---|---|---|
 | 34042224984 | docs | `a13498e` | success, 15:26 UTC |
 | 34042225010 | test | `a13498e` | 51 pass, 0 fail, 1 skip in 9 minutes (Icarus 12, cocotb 2.0.1; the delay-sweep table matches the local one; `results.xml` written, no teardown fault); the step failed because the template's check is `! grep failure results.xml` and the test name `test_negative_known_failure` matched. The `gl_test` action of `tt-gds-action@ttsky26c` runs the same grep. Fix: the test is `test_negative_known_mismatch`. |
-| 34042224998 | gds | `a13498e` | in progress at 15:40 UTC |
+| 34042224998 | gds | `a13498e` | `gds` job success (11 minutes), `precheck` success (15 of 15 checks), `gl_test` 11 pass, 0 fail, 41 skip in 23 minutes but the job failed on the same grep, `viewer` failed because GitHub Pages was not enabled; artifact verifier PASS (`evidence/ci/run1_a13498e_34042224998/`) |
+| 34042869988 | docs | `2c546d4` | success |
+| 34042869875 | test | `2c546d4` | success: 51 pass, 0 fail, 1 skip |
+| 34042870023 | gds | `2c546d4` | success: `gds` 11 minutes, `precheck` 15 of 15, `gl_test` 11 pass, 0 fail, 41 skip (25 minutes; the delay-sweep table matches), `viewer` deployed after Pages was enabled with the GitHub Actions source; artifact verifier PASS (`evidence/ci/run2_2c546d4_34042870023/`) |
+
+**Commit to submit: `2c546d4`, gds run 34042870023** (`https://github.com/moein-maleki/ttsky26c-arm16/actions/runs/34042870023`).
+Both CI hardens (LibreLane 3.0.5 on the runner) reproduce local run 3 (LibreLane 3.0.3) in every metric:
+74.99% placed, 6,126 cells, setup +6.872 ns, hold +0.108 ns, DRC, LVS and antenna 0, and the same 1,969 / 27 / 21
+design-rule counts. The GDS viewer is at `https://moein-maleki.github.io/ttsky26c-arm16/`. Remaining for the
+user: the portal submission (app.tinytapeout.com), the QSPI and TinyVGA Pmods, the jumpers JP2 to JP9 and the
+flash quad-enable bit at bring-up (spec section 15).
