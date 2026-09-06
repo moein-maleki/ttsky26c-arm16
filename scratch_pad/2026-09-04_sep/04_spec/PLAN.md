@@ -14,8 +14,11 @@
 - [x] User reviewed the spec through two revisions: v0.2 (TinyVGA replaces the digit, 2026-09-05) and v0.3
       (stall policy, ROM above UART, 2026-09-06). Section 18's open items (install binutils, order the two
       Pmods) moved to `tasks/todo.md`.
-- [ ] Then: RTL per the spec and the checklist, synthesizing after every block.
+- [x] Then: RTL per the spec and the checklist, synthesizing after every block. (Done 2026-09-06; spec v0.4 records the implementation decisions in section 19.)
 
 ### 2026-09-06 progress
 Spec v0.3 is the agreed gate; RTL may start. Superseding plan for execution: `03_memory_options/PLAN.md`
 (the RTL checklist) and section 9 of the architecture exploration report (the order of work).
+
+### 2026-09-06 (later) progress
+RTL written and verified; spec revised to v0.4 (section 19). This plan is complete.

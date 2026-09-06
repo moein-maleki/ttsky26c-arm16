@@ -27,18 +27,18 @@
 
 ## Checklist
 
-- [ ] Choose shuttle and repo name; create the design repo from the template; copy `rtl/` in; commit.
-- [ ] Make the 16-bit narrowing correct: audit every substituted width, the PC, immediates, shifter and
+- [~] Choose shuttle and repo name; create the design repo from the template; copy `rtl/` in; commit.
+- [~] Make the 16-bit narrowing correct: audit every substituted width, the PC, immediates, shifter and
       condition logic; bring the five defect regressions from `02_rtl_correctness_fixes` across.
-- [ ] Write a cocotb QSPI flash/PSRAM model and a golden Python model of the core; assemble a small test
+- [~] Write a cocotb QSPI flash/PSRAM model and a golden Python model of the core; assemble a small test
       program with a real assembler (or a tiny custom one) and store it as 16-bit word pairs.
-- [ ] Pass: directed tests, the regression set, a program run end to end in RTL simulation.
-- [ ] Add the observable output path and a demo program (seven-segment counter or LED pattern).
-- [ ] Harden per memory `ttsky26c-hardening-guardrails`: regenerate user config, harden at 20 to 25 MHz,
+- [~] Pass: directed tests, the regression set, a program run end to end in RTL simulation.
+- [~] Add the observable output path and a demo program (seven-segment counter or LED pattern).
+- [~] Harden per memory `ttsky26c-hardening-guardrails`: regenerate user config, harden at 20 to 25 MHz,
       assert the top module, check setup and hold across nine corners, DRC, LVS, antenna; snapshot metrics.
-- [ ] Gate-level cocotb on the powered netlist (`PDK_ROOT` set, netlist copied to `test/gate_level_netlist.v`).
-- [ ] `docs/info.md` datasheet, README, umbrella index row; write the process log the user wants to post.
-- [ ] If tight on area: single 32-bit instruction copy, shared QSPI registers (about 15% together).
+- [~] Gate-level cocotb on the powered netlist (`PDK_ROOT` set, netlist copied to `test/gate_level_netlist.v`).
+- [~] `docs/info.md` datasheet, README, umbrella index row; write the process log the user wants to post.
+- [~] If tight on area: single 32-bit instruction copy, shared QSPI registers (about 15% together).
 
 ## Rules
 
@@ -51,3 +51,7 @@ Superseded. The shuttle and repository decisions are taken (TTSKY26c, `designs/t
 is decided (`03_memory_options`), and the checklist above now lives in `tasks/todo.md` and `docs/spec.md`
 v0.3. The probe RTL in `rtl/` remains the starting point for the RTL task and carries the defects listed in
 `04_spec/REPORT.md` and `03_memory_options/REPORT.md`.
+
+### 2026-09-06 (later)
+The RTL sprint (`../../2026-09-06_sep/02_rtl_sprint/`) delivered every item on this list under its own plan;
+the boxes above are marked `[~]` (superseded), not done here.
