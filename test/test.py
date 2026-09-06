@@ -173,7 +173,7 @@ async def test_demo_rom_program_counts(dut):
 
 
 @cocotb.test(skip=not ROMTEST, expect_fail=True)
-async def test_negative_known_failure(dut):
+async def test_negative_known_mismatch(dut):
     """Deliberately wrong expectation so the suite is known to see (spec 14.4)."""
     start_clock(dut)
     _, _, model = await run_rom_program(dut, "MOV r0, #1\nADDS r1, r0, #1\nB .")

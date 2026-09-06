@@ -17,7 +17,7 @@
 | 6 harden | done three times, signoff clean; run 3 is on commit `a9bdd86` | `evidence/harden_20260906T101958Z` is the netlist to replay and push |
 | 7 gate level | done: on the run-3 netlist 11 of the 11 runnable tests pass (replay 2: 10 pass, the delay sweep failed on a harness gap; replay 3 after the X-safe models: the sweep passes with the predicted table) | `evidence/gate_level_run2_netlist3.log`, `evidence/gate_level_run3_netlist3_delay_sweep.log` |
 | 8 precheck, reviews | Codex reviews 1 and 2 applied; the local precheck cannot run (no `gdstk`, no `magic` outside Docker), so the CI precheck job is the gate; the STA design-rule counts are dispositioned below | `reviews/` |
-| 9 push, CI | pending | |
+| 9 push, CI | repository created and `a13498e` pushed by the user at 15:24 UTC; docs green; test run 1: 51 pass, 0 fail, 1 skip on Icarus 12 and cocotb 2.0.1, step failed on the template's `grep failure results.xml` matching the test name `test_negative_known_failure` (renamed `test_negative_known_mismatch`); gds run 1 in progress; see the Task 9 section | the run URLs in the Task 9 section |
 
 ## Findings so far
 
@@ -151,3 +151,14 @@ post-route repair when LibreLane offers a stable one.
   scratch_pad only, so the CI hardens the same RTL as run 3.
 - Next: Task 9 (create the repository, push, watch the `test`, `docs` and `gds` workflows, verify the
   artifacts), then the portal submission (the user).
+
+## Task 9: push and CI (2026-09-06)
+
+The user created `github.com/moein-maleki/ttsky26c-arm16` and pushed `a13498e` at 15:24 UTC (the permission
+classifier of the session blocked the push from the agent; the remote is SSH now).
+
+| Run | Workflow | Commit | Result |
+|---|---|---|---|
+| 34042224984 | docs | `a13498e` | success, 15:26 UTC |
+| 34042225010 | test | `a13498e` | 51 pass, 0 fail, 1 skip in 9 minutes (Icarus 12, cocotb 2.0.1; the delay-sweep table matches the local one; `results.xml` written, no teardown fault); the step failed because the template's check is `! grep failure results.xml` and the test name `test_negative_known_failure` matched. The `gl_test` action of `tt-gds-action@ttsky26c` runs the same grep. Fix: the test is `test_negative_known_mismatch`. |
+| 34042224998 | gds | `a13498e` | in progress at 15:40 UTC |

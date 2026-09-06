@@ -63,3 +63,6 @@ Carried from the lab repository and the earlier TinyTapeout designs; only what i
 - Docker cannot see the session scratchpad under the sandboxed `/tmp`; a clone for an isolated harden must
   live under the home directory.
 - `tt/precheck` needs `gdstk` and a native `magic`; neither is installed, so the CI precheck job is the gate.
+- The TinyTapeout CI checks a run with `! grep failure results.xml`, in the template's `test` job and in the
+  `gl_test` action alike, so a test whose name contains "failure" fails the job with zero failures (the
+  first CI run on `a13498e`: 51 pass, 0 fail, step failed). Name negative tests without that word.
