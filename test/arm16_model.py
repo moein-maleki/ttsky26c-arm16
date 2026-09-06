@@ -61,6 +61,8 @@ class Arm16Model:
         self.meter = 0
         self.retired = 0
         self.bus_transactions = 0
+        self.psram_transactions = 0
+        self.flash_reads = 0
         self.stores = 0
         self.loads = 0
         self.trace = []
@@ -81,7 +83,9 @@ class Arm16Model:
             return self.read_peripheral(addr - 0xFF00)
         self.bus_transactions += 1
         if addr < 0x8000:
+            self.flash_reads += 1
             return int.from_bytes(self.flash[addr:addr + 2], "little")
+        self.psram_transactions += 1
         off = addr - 0x8000
         return int.from_bytes(self.psram[off:off + 2], "little")
 
@@ -95,6 +99,7 @@ class Arm16Model:
         if addr < 0x8000:
             return                                   # a store to the flash range does nothing, no bus
         self.bus_transactions += 1
+        self.psram_transactions += 1
         off = addr - 0x8000
         self.psram[off:off + 2] = value.to_bytes(2, "little")
 

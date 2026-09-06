@@ -128,6 +128,7 @@ module arm16_datapath (
     reg         fwd_en_q;
     reg  [1:0]  rx_delay_q;
     reg         rom_mode_q;
+    reg         uart_en_q;
     reg  [15:0] fetch_addr;
     reg  [31:0] fetch_word;
     reg         d_valid;
@@ -179,7 +180,7 @@ module arm16_datapath (
 
     // ---------------------------------------------------------------- continuous assignments
     assign disp_sel       = pins_in[1];
-    assign uart_en        = pins_in[2];
+    assign uart_en        = uart_en_q;
     assign user_sel       = pins_in[7];
     assign rom_mode_out   = rom_mode_q;
     assign presented_word  = fetch_src_rom_in ? rom_word : fetch_word;
@@ -229,6 +230,11 @@ module arm16_datapath (
             rx_delay_q <= pins_in[5:4];
             rom_mode_q <= pins_in[6];
         end
+    end
+
+    // UART_EN is registered so no input pin reaches an output pin through combinational logic
+    always @(posedge clk) begin
+        uart_en_q <= pins_in[2];
     end
 
     // ---------------------------------------------------------------- fetch address and delivered word

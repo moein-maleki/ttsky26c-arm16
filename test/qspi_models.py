@@ -70,6 +70,7 @@ class ChipModel:
         self.bytes_in = 0
         self.first_addresses = []
         self.commands = []
+        self.transaction_bytes = []
         self.cs_low_max_ns = 0.0
         self.last_cs_rise_ns = None
         self.sd_last_change_ns = None
@@ -178,6 +179,7 @@ class ChipModel:
                     drive_tasks.append(cocotb.start_soon(self._drive_nibble(address, nib_index, now)))
                 period += 1
         t_high = get_sim_time("ns")
+        self.transaction_bytes.append(self.bytes_out - sum(self.transaction_bytes))
         self.last_cs_rise_ns = t_high
         self.cs_low_max_ns = max(self.cs_low_max_ns, t_high - t_low)
         if t_high - t_low > self.max_cs_low_ns():
