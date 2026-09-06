@@ -3,7 +3,7 @@ project:
   title:        "arm16"
   author:       "Moein Maleki"
   discord:      ""
-  description:  "16-bit five-stage ARM pipeline with forwarding and hazard detection. Program in external QSPI flash, data in QSPI PSRAM, seven-segment display and UART. First ARM core on Tiny Tapeout."
+  description:  "16-bit five-stage ARM pipeline with forwarding and hazard detection. Program in external QSPI flash, data in QSPI PSRAM, VGA output of four large digits, UART. First ARM core on Tiny Tapeout."
   language:     "Verilog"
   clock_hz:     25000000
 
@@ -33,14 +33,14 @@ pinout:
   ui[7]: "USER"
 
   # Outputs
-  uo[0]: "SEG_A"
-  uo[1]: "SEG_B"
-  uo[2]: "SEG_C"
-  uo[3]: "SEG_D"
-  uo[4]: "SEG_E / UART_TX"
-  uo[5]: "SEG_F"
-  uo[6]: "SEG_G"
-  uo[7]: "SEG_DP / QSPI_ACTIVE"
+  uo[0]: "R1"
+  uo[1]: "G1"
+  uo[2]: "B1"
+  uo[3]: "VSYNC"
+  uo[4]: "R0 / UART_TX"
+  uo[5]: "G0"
+  uo[6]: "B0"
+  uo[7]: "HSYNC"
 
   # Bidirectional pins
   uio[0]: "CS_FLASH"

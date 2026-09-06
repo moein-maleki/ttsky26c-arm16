@@ -31,11 +31,12 @@
       `tinytapeout-flasher`.
 - [ ] UART: 8N1, transmit and receive, one holding byte each, RX_OVERRUN flag, programmable 16-bit divisor
       with reset value 217; RX on ui_in[3] through a two-flop synchronizer; TX on uo_out[4] when UART_EN
-      (ui_in[2]) is high, else segment E. Registers UART_DATA 0xFF04, UART_STAT 0xFF06, UART_DIV 0xFF08.
+      (ui_in[2]) is high, which turns the video off. Registers UART_DATA 0xFF04, UART_STAT 0xFF06, UART_DIV 0xFF08.
       Measure it; it is a must-have after the controller and the display.
-- [ ] Peripheral window 0xFF00 to 0xFFFF decoded in the memory stage without touching the Pmod bus: DISP,
-      SW, HEXDISP with a hex-to-seven-segment decoder, the hardware view on DISP_SEL, CYCLES and RETIRED
-      if under the cap.
+- [ ] Peripheral window 0xFF00 to 0xFFFF decoded in the memory stage without touching the Pmod bus: VGA_VAL,
+      VGA_FG, VGA_BG, SW, the hardware view on DISP_SEL, CYCLES and RETIRED if under the cap.
+- [ ] VGA: 640x480 at 60 Hz timing from the 25 MHz core clock and the four-digit renderer
+      (`06_vga_question/rtl/`, measured 306 cells); TinyVGA pin order on uo_out; blanked when UART_EN is high.
 - [ ] Measure a DIP-selected internal demo ROM (one seven-segment program); include it if utilization stays
       under about 72%.
 - [ ] cocotb model of the W25Q128JV (EBh, mode byte, auto-increment, QE state) and APS6404L (EBh, 38h, tCEM

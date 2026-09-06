@@ -3,8 +3,8 @@
 A 16-bit five-stage ARM pipeline on one TinyTapeout 2x2 tile, sky130A, shuttle TTSKY26c. Forwarding,
 hazard detection, condition codes, a barrel shifter and the standard 32-bit ARM instruction encoding, with
 the program streamed from an external QSPI flash and the data in a QSPI PSRAM on the TinyTapeout QSPI Pmod.
-A seven-segment digit shows the program's output with no computer attached. A UART over the demo board's USB
-bridge is there for debugging.
+A monitor on the TinyVGA Pmod shows the program's output as four large digits with no computer attached. A UART
+over the demo board's USB bridge is there for debugging.
 
 | Item | Value |
 |---|---|

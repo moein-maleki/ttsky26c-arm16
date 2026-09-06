@@ -17,7 +17,7 @@
 `docs/spec.md` v0.1. The six decisions in section 17 change the RTL; the three questions in section 18 need the user. No RTL before this is agreed.
 
 #### P1 · 2026-09-05 · Write the RTL to the spec
-Core from the probe RTL with every narrowed width audited; ARM-standard branch, load/store direction, BL, r15 semantics; ALU flags rewritten; streaming QSPI controller from `tinyQV/cpu/qspi_flash.v` with the sampling delay and falling-edge SCK; peripheral decode, DISP, SW, HEXDISP, hardware view, UART. Checklist: `scratch_pad/2026-09-04_sep/03_memory_options/PLAN.md`. Synthesize after each block; stay under 72%.
+Core from the probe RTL with every narrowed width audited; ARM-standard branch, load/store direction, BL, r15 semantics; ALU flags rewritten; streaming QSPI controller from `tinyQV/cpu/qspi_flash.v` with the sampling delay and falling-edge SCK; peripheral decode, the VGA timing generator and four-digit renderer, SW, hardware view, UART. Checklist: `scratch_pad/2026-09-04_sep/03_memory_options/PLAN.md`. Synthesize after each block; stay under 72%.
 
 #### P1 · 2026-09-05 · Golden model, assembler, memory models
 Python ARM-subset simulator from the ARM definition; Python encoder for the subset (cross-check against `arm-none-eabi-as` when installed); cocotb models of the W25Q128JV and APS6404L from the datasheets in `scratch_pad/2026-09-04_sep/03_memory_options/evidence/`.
@@ -29,7 +29,7 @@ Spec section 14: directed tests per class with flags, the five lab regressions r
 Per the `ttsky26c-hardening-guardrails` note: regenerate user config, harden, assert the top module, nine corners, DRC, LVS, antenna, snapshot metrics, gate-level cocotb on the powered netlist. TinyQV's SDC.
 
 #### P2 · 2026-09-06 · Demo program and internal ROM
-A counting program for the digit; measure the 16-instruction ROM and include it if under the cap; the datasheet page `docs/info.md`; umbrella index row.
+A counting program for the screen; measure the 16-instruction ROM and include it if under the cap; the datasheet page `docs/info.md`; umbrella index row.
 
 #### P3 · 2026-09-07 · Push, CI, submit
 Create the GitHub repository, push, confirm test, docs and GDS workflows green, submit the 2x2 on the portal.
@@ -47,6 +47,7 @@ Same RTL, golden model, tests and programs; add `RM_IHPSG13_1P_512x16` (45,309 u
 - [x] Lab work promoted: the five defect fixes with regressions, the fit probe, the memory research (`scratch_pad/PROVENANCE.md`).
 - [x] Decoder audit for the spec: three encoding quirks (branch offset unshifted from PC+4, direction bit ignored, BL without link), N and V read bit 31 of a 16-bit result, C computed from signed operands. `scratch_pad/2026-09-04_sep/04_spec/REPORT.md`.
 - [x] `docs/spec.md` v0.1 and `info.yaml` pinout written.
+- [x] 2026-09-05: spec v0.2, the TinyVGA Pmod replaces the seven-segment digit (measured 5.2%), UART behind the mode switch, clock fixed at 25 MHz.
 
 ### Cache question (2026-09-05)
 - [x] Measured: flop caches of 4 to 64 lines on sky130 (14% to 204% of the tile); the core on SG13G2 (65,780 um^2, 2.01x sky130); IHP macro sizes from the PDK LEFs; TT rules and prior art researched. No cache on sky130; cache is the IHP v2. `scratch_pad/2026-09-04_sep/05_cache_question/REPORT.md`.
