@@ -2,7 +2,9 @@
 // States: S_IDLE (between transactions), S_ROM (internal ROM mode, never left), S_STREAM_EMPTY (flash
 // stream open, no delivered word), S_STREAM_FULL (a delivered word waits for the pipeline), S_DATA
 // (a data transaction runs, the pipeline is frozen). The fetch address advances exactly once per
-// accepted word; every abort restarts the stream at the fetch address (plan D3).
+// accepted word (if_id_load_out is the accept: decode takes the presented word, fetch_addr moves on,
+// ID/EX loads; any cycle without an accept puts a bubble into execute); every abort restarts the
+// stream at the fetch address (plan D3).
 `default_nettype none
 module arm16_controller (
     input  wire clk,
@@ -112,8 +114,8 @@ module arm16_controller (
         fetch_word_load_out = 1'b0;
         fetch_src_rom_out   = 1'b0;
         if_id_load_out      = 1'b0;
-        if_id_bubble_out    = fetch_ready | redirect_in;
-        id_ex_bubble_out    = hazard_in | redirect_in;
+        if_id_bubble_out    = redirect_in;
+        id_ex_bubble_out    = 1'b1;
         mem_busy_out        = mem_busy;
         case (present_state)
             S_IDLE: begin
@@ -127,7 +129,6 @@ module arm16_controller (
             S_ROM: begin
                 fetch_src_rom_out  = 1'b1;
                 if_id_load_out     = fetch_ready & ~redirect_in;
-                if_id_bubble_out   = redirect_in;
                 fetch_addr_inc_out = fetch_ready & ~redirect_in;
             end
             S_STREAM_EMPTY: begin
@@ -142,7 +143,6 @@ module arm16_controller (
                 word_take_out       = word_valid_in & fetch_ready & ~abort;
                 fetch_word_load_out = word_valid_in & fetch_ready & ~abort;
                 if_id_load_out      = fetch_ready & ~redirect_in;
-                if_id_bubble_out    = redirect_in;
                 fetch_addr_inc_out  = fetch_ready & ~redirect_in;
             end
             S_DATA: begin
@@ -152,6 +152,7 @@ module arm16_controller (
                 stream_start_out = 1'b0;
             end
         endcase
+        id_ex_bubble_out = ~if_id_load_out;
     end
 endmodule
 `default_nettype wire

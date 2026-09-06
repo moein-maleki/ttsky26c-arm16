@@ -10,8 +10,12 @@ PROJECT_SOURCES = project.v reset_synchronizer.v arm16_controller.v arm16_datapa
                   instruction_decoder.v condition_checker.v register_file.v barrel_shifter.v alu.v \
                   hazard_detector.v forwarding_selector.v demo_rom.v qspi_master.v vga_renderer.v
 
-# ROMTEST=yes replaces the sixteen-word demo ROM with the 1,024-word test ROM that cocotb fills by
-# hierarchy (RTL suite only; the gate-level netlist carries the real ROM).
+# The RTL suite replaces the sixteen-word demo ROM with the 1,024-word test ROM that cocotb fills by
+# hierarchy (ROMTEST=yes, the default for RTL; ROMTEST=no builds the shipped ROM; the gate-level
+# netlist always carries the real ROM). test_software.py proves src/demo_rom.v matches programs/demo_rom.s.
+ifneq ($(GATES),yes)
+ROMTEST ?= yes
+endif
 ifeq ($(ROMTEST),yes)
 PROJECT_SOURCES := $(filter-out demo_rom.v,$(PROJECT_SOURCES))
 export ROMTEST

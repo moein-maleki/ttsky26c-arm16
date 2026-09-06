@@ -41,7 +41,6 @@ module arm16_datapath (
     output wire        cs_ram_a_n_out,
     output wire        cs_ram_b_n_out
 );
-    localparam [31:0] BUBBLE_WORD = 32'hF000_0000;
     localparam [6:0]  PERIPH_VGA_VAL   = 7'h00;
     localparam [6:0]  PERIPH_SW        = 7'h01;
     localparam [6:0]  PERIPH_UART_DATA = 7'h02;
@@ -92,6 +91,7 @@ module arm16_datapath (
     wire        alu_zero;
     wire [3:0]  flags_next;
     wire        flags_write;
+    wire [3:0]  cond_flags;
     wire [15:0] ex_pc_plus_4;
     wire [15:0] ex_pc_plus_8;
     wire [15:0] ex_branch_target;
@@ -113,6 +113,7 @@ module arm16_datapath (
     wire        engine_fault;
     wire [31:0] rom_word;
     wire [31:0] presented_word;
+    wire        presented_valid;
     wire        uart_tx;
     wire [15:0] display_value;
     wire [5:0]  display_fg;
@@ -129,9 +130,7 @@ module arm16_datapath (
     reg         rom_mode_q;
     reg  [15:0] fetch_addr;
     reg  [31:0] fetch_word;
-    reg  [15:0] if_id_pc;
-    reg  [31:0] if_id_instr;
-    reg         if_id_valid;
+    reg         d_valid;
     reg         ex_valid;
     reg  [15:0] ex_pc;
     reg         ex_wb_en;
@@ -146,7 +145,7 @@ module arm16_datapath (
     reg         ex_immediate;
     reg         ex_memory;
     reg  [11:0] ex_operand2;
-    reg  [23:0] ex_branch_imm;
+    reg  [13:0] ex_branch_imm;
     reg  [15:0] ex_val_rn;
     reg  [15:0] ex_val_rm;
     reg  [3:0]  ex_src1;
@@ -174,8 +173,7 @@ module arm16_datapath (
     reg  [15:0] vga_val;
     reg  [5:0]  vga_fg;
     reg  [5:0]  vga_bg;
-    reg  [15:0] uart_div;
-    reg  [15:0] retired_count;
+    reg  [19:0] retired_count;
     reg  [15:0] meter_value;
     reg         vsync_q;
 
@@ -184,11 +182,12 @@ module arm16_datapath (
     assign uart_en        = pins_in[2];
     assign user_sel       = pins_in[7];
     assign rom_mode_out   = rom_mode_q;
-    assign presented_word = fetch_src_rom_in ? rom_word : fetch_word;
+    assign presented_word  = fetch_src_rom_in ? rom_word : fetch_word;
+    assign presented_valid = fetch_src_rom_in | d_valid;
 
-    assign id_live        = if_id_valid & id_valid_dec;
+    assign id_live        = presented_valid & id_valid_dec;
     assign id_exec        = id_live & id_cond_met;
-    assign id_pc_plus_8   = if_id_pc + 16'd8;
+    assign id_pc_plus_8   = fetch_addr + 16'd8;
     assign id_val_rn      = (id_src1 == 4'd15) ? id_pc_plus_8 : rf_read_first;
     assign id_val_rm      = (id_src2 == 4'd15) ? id_pc_plus_8 : rf_read_second;
     assign hazard_out     = hazard;
@@ -200,6 +199,7 @@ module arm16_datapath (
     assign redirect_out     = ex_valid & (ex_branch | ex_dest_is_pc);
     assign flags_next       = {alu_negative, alu_zero, alu_arith ? alu_carry : ex_flags[1], alu_arith ? alu_overflow : ex_flags[0]};
     assign flags_write      = ex_valid & ex_set_flags;
+    assign cond_flags       = flags_write ? flags_next : nzcv;
 
     assign mem_addr_is_periph = (mem_alu_result[15:8] == 8'hFF);
     assign mem_periph_index   = mem_alu_result[7:1];
@@ -212,7 +212,7 @@ module arm16_datapath (
 
     assign wb_value = wb_mem_read ? wb_load_data : wb_alu_result;
 
-    assign engine_addr    = addr_sel_in ? {1'b0, mem_alu_result[14:0]} : fetch_addr;
+    assign engine_addr    = addr_sel_in ? {1'b0, mem_alu_result[14:1], 1'b0} : fetch_addr;
     assign busy_out       = engine_busy;
     assign word_valid_out = engine_word_valid;
     assign data_done_out  = engine_data_done;
@@ -242,22 +242,23 @@ module arm16_datapath (
         end
     end
 
+    // The delivered word D is the decode-stage instruction register of the streamed path: the word at
+    // fetch_addr sits in D until decode accepts it (if_id_load_in), a refill in the same cycle keeps
+    // d_valid set, and a redirect drops it (if_id_bubble_in). In ROM mode decode reads the ROM word at
+    // fetch_addr directly. A word with condition 1111 is never valid (the drain policy's bubble).
     always @(posedge clk) begin
         if (fetch_word_load_in) begin
             fetch_word <= engine_rdata;
         end
     end
 
-    // ---------------------------------------------------------------- IF/ID register (drain policy)
     always @(posedge clk) begin
         if (rst | if_id_bubble_in) begin
-            if_id_pc    <= 16'h0000;
-            if_id_instr <= BUBBLE_WORD;
-            if_id_valid <= 1'b0;
+            d_valid <= 1'b0;
+        end else if (fetch_word_load_in) begin
+            d_valid <= (engine_rdata[31:28] != 4'b1111);
         end else if (if_id_load_in) begin
-            if_id_pc    <= fetch_addr;
-            if_id_instr <= presented_word;
-            if_id_valid <= (presented_word[31:28] != 4'b1111);
+            d_valid <= 1'b0;
         end
     end
 
@@ -278,7 +279,7 @@ module arm16_datapath (
             ex_immediate  <= 1'b0;
             ex_memory     <= 1'b0;
             ex_operand2   <= 12'd0;
-            ex_branch_imm <= 24'd0;
+            ex_branch_imm <= 14'd0;
             ex_val_rn     <= 16'h0000;
             ex_val_rm     <= 16'h0000;
             ex_src1       <= 4'd0;
@@ -288,7 +289,7 @@ module arm16_datapath (
             ex_flags      <= 4'b0000;
         end else if (~mem_busy_in) begin
             ex_valid      <= id_live;
-            ex_pc         <= if_id_pc;
+            ex_pc         <= fetch_addr;
             ex_wb_en      <= id_exec & id_wb_en;
             ex_mem_read   <= id_exec & id_is_load;
             ex_mem_write  <= id_exec & id_is_store;
@@ -301,14 +302,14 @@ module arm16_datapath (
             ex_immediate  <= id_immediate;
             ex_memory     <= id_memory;
             ex_operand2   <= id_operand2;
-            ex_branch_imm <= id_branch_imm;
+            ex_branch_imm <= id_branch_imm[13:0];
             ex_val_rn     <= id_val_rn;
             ex_val_rm     <= id_val_rm;
             ex_src1       <= id_src1;
             ex_src2       <= id_src2;
             ex_has_src1   <= id_exec & id_has_src1;
             ex_has_src2   <= id_exec & id_has_src2;
-            ex_flags      <= nzcv;
+            ex_flags      <= cond_flags;
         end
     end
 
@@ -352,23 +353,24 @@ module arm16_datapath (
         end
     end
 
-    // ---------------------------------------------------------------- flags, written on the falling edge (spec 3.2);
-    // the execute stage reads the snapshot taken into ID/EX, so an instruction never sees its own update
-    always @(negedge clk) begin
+    // ---------------------------------------------------------------- flags (plan D10): written on the rising edge and
+    // bypassed into decode through cond_flags, so the condition check sees the execute stage's flags in the same
+    // cycle without a half-period path; the execute stage reads the snapshot taken into ID/EX
+    always @(posedge clk) begin
         if (rst) begin
             nzcv <= 4'b0000;
-        end else if (flags_write) begin
+        end else if (flags_write & ~mem_busy_in) begin
             nzcv <= flags_next;
         end
     end
 
-    // ---------------------------------------------------------------- peripheral registers (spec 3.4)
+    // ---------------------------------------------------------------- peripheral registers (spec 3.4); the UART is
+    // dropped by the area rule of section 11 (plan D13): its registers read 0, UART_EN still blanks the video
     always @(posedge clk) begin
         if (rst) begin
             vga_val  <= 16'h0000;
             vga_fg   <= 6'b111111;
             vga_bg   <= 6'b000000;
-            uart_div <= 16'd217;
         end else if (mem_periph_write) begin
             if (mem_periph_index == PERIPH_VGA_VAL) begin
                 vga_val <= mem_store_data;
@@ -379,25 +381,23 @@ module arm16_datapath (
             if (mem_periph_index == PERIPH_VGA_BG) begin
                 vga_bg <= mem_store_data[5:0];
             end
-            if (mem_periph_index == PERIPH_UART_DIV) begin
-                uart_div <= mem_store_data;
-            end
         end
     end
 
-    // ---------------------------------------------------------------- retired-per-frame meter
+    // ---------------------------------------------------------------- retired-per-frame meter: METER = retired / 16, so a
+    // ROM-mode frame (about 360,000 retired) fits 16 bits and the FWD_EN ratio stays visible
     always @(posedge clk) begin
         if (rst) begin
-            retired_count <= 16'h0000;
+            retired_count <= 20'h00000;
             meter_value   <= 16'h0000;
             vsync_q       <= 1'b1;
         end else begin
             vsync_q <= vga_vsync;
             if (vsync_q & ~vga_vsync) begin
-                meter_value   <= retired_count;
-                retired_count <= {15'd0, retired_pulse};
+                meter_value   <= retired_count[19:4];
+                retired_count <= {19'd0, retired_pulse};
             end else if (retired_pulse) begin
-                retired_count <= retired_count + 16'd1;
+                retired_count <= retired_count + 20'd1;
             end
         end
     end
@@ -429,7 +429,7 @@ module arm16_datapath (
             PERIPH_SW:        mem_periph_read = {8'h00, pins_in};
             PERIPH_UART_DATA: mem_periph_read = 16'h0000;
             PERIPH_UART_STAT: mem_periph_read = 16'h0000;
-            PERIPH_UART_DIV:  mem_periph_read = uart_div;
+            PERIPH_UART_DIV:  mem_periph_read = 16'h0000;
             PERIPH_METER:     mem_periph_read = meter_value;
             PERIPH_VGA_FG:    mem_periph_read = {10'd0, vga_fg};
             PERIPH_VGA_BG:    mem_periph_read = {10'd0, vga_bg};
@@ -444,7 +444,7 @@ module arm16_datapath (
     );
 
     instruction_decoder instruction_decoder_unit (
-        .instr_in       (if_id_instr),
+        .instr_in       (presented_word),
         .valid_out      (id_valid_dec),
         .cond_out       (id_cond),
         .is_load_out    (id_is_load),
@@ -468,7 +468,7 @@ module arm16_datapath (
 
     condition_checker condition_checker_unit (
         .cond_in  (id_cond),
-        .flags_in (nzcv),
+        .flags_in (cond_flags),
         .met_out  (id_cond_met)
     );
 

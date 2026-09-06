@@ -23,7 +23,7 @@ module vga_renderer (
     wire [1:0] digit;
     wire [1:0] grid_x;
     wire [2:0] grid_y;
-    wire       lit;
+    wire       lit_next;
     wire [5:0] colour;
 
     reg [9:0] h_count;
@@ -31,6 +31,7 @@ module vga_renderer (
     reg       active;
     reg       hsync_n;
     reg       vsync_n;
+    reg       lit;
     reg [3:0] nibble;
     reg [6:0] segments;
     reg       segment_on;
@@ -44,7 +45,7 @@ module vga_renderer (
     assign digit     = h_rel[8:7];
     assign grid_x    = h_rel[6:5];
     assign grid_y    = v_rel[7:5];
-    assign lit       = active & in_x & in_y & segment_on;
+    assign lit_next  = in_x & in_y & segment_on;
     assign colour    = (active & enable_in) ? (lit ? fg_in : bg_in) : 6'b000000;
     assign vsync_out = vsync_n;
 
@@ -61,6 +62,7 @@ module vga_renderer (
         active   <= (h_count < 10'd640) & (v_count < 10'd480);
         hsync_n  <= ~((h_count >= 10'd656) & (h_count < 10'd752));
         vsync_n  <= ~((v_count >= 10'd490) & (v_count < 10'd492));
+        lit      <= lit_next;
         pins_out <= {hsync_n, colour[0], colour[2], colour[4], vsync_n, colour[1], colour[3], colour[5]};
     end
 

@@ -14,27 +14,33 @@ module barrel_shifter (
     wire [7:0]  imm8;
     wire [4:0]  shift_amount;
     wire [1:0]  shift_type;
+    wire [3:0]  amount;
+    wire [3:0]  rotate_by;
     wire [31:0] imm_rail;
     wire [15:0] imm_rotated;
     wire [31:0] value_rail;
-    wire [15:0] value_rotated;
-    wire [15:0] value_lsl;
-    wire [15:0] value_lsr;
-    wire [15:0] value_asr;
-    wire [15:0] sign_fill;
+    wire [15:0] rotated;
+    wire [15:0] keep_high_mask;
+    wire [15:0] keep_low_mask;
+    wire        big_shift;
+    wire        sign;
 
-    assign rotate_amount = operand2_in[11:8];
-    assign imm8          = operand2_in[7:0];
-    assign shift_amount  = operand2_in[11:7];
-    assign shift_type    = operand2_in[6:5];
-    assign imm_rail      = {{8{1'b0}}, imm8, {8{1'b0}}, imm8} >> {rotate_amount[2:0], 1'b0};
-    assign imm_rotated   = imm_rail[15:0];
-    assign value_rail    = {value_in, value_in} >> shift_amount[3:0];
-    assign value_rotated = value_rail[15:0];
-    assign value_lsl     = value_in << shift_amount[3:0];
-    assign value_lsr     = value_in >> shift_amount[3:0];
-    assign sign_fill     = {16{value_in[15]}};
-    assign value_asr     = (value_lsr) | (sign_fill << (5'd16 - {1'b0, shift_amount[3:0]}));
+    assign rotate_amount  = operand2_in[11:8];
+    assign imm8           = operand2_in[7:0];
+    assign shift_amount   = operand2_in[11:7];
+    assign shift_type     = operand2_in[6:5];
+    assign amount         = shift_amount[3:0];
+    assign big_shift      = shift_amount[4];
+    assign sign           = value_in[15];
+    assign imm_rail       = {{8{1'b0}}, imm8, {8{1'b0}}, imm8} >> {rotate_amount[2:0], 1'b0};
+    assign imm_rotated    = imm_rail[15:0];
+    // one rotator serves every register form: rotate right by `amount` for LSR, ASR and ROR, and by
+    // 16 - amount for LSL; the masks clear the bits a true shift would drop
+    assign rotate_by      = (shift_type == 2'b00) ? (4'd0 - amount) : amount;
+    assign value_rail     = {value_in, value_in} >> rotate_by;
+    assign rotated        = value_rail[15:0];
+    assign keep_high_mask = 16'hFFFF << amount;      // LSL: the low `amount` bits become 0
+    assign keep_low_mask  = 16'hFFFF >> amount;      // LSR, ASR: the high `amount` bits become 0 or the sign
 
     always @* begin
         result_out = 16'h0000;
@@ -44,10 +50,10 @@ module barrel_shifter (
             result_out = imm_rotated;
         end else begin
             case (shift_type)
-                2'b00: result_out = shift_amount[4] ? 16'h0000 : value_lsl;
-                2'b01: result_out = shift_amount[4] ? 16'h0000 : value_lsr;
-                2'b10: result_out = shift_amount[4] ? sign_fill : (shift_amount[3:0] == 4'd0 ? value_in : value_asr);
-                default: result_out = value_rotated;
+                2'b00:   result_out = big_shift ? 16'h0000 : (rotated & keep_high_mask);
+                2'b01:   result_out = big_shift ? 16'h0000 : (rotated & keep_low_mask);
+                2'b10:   result_out = big_shift ? {16{sign}} : ((rotated & keep_low_mask) | (sign ? ~keep_low_mask : 16'h0000));
+                default: result_out = rotated;
             endcase
         end
     end

@@ -1,6 +1,11 @@
 # arm16 design specification
 
-> Version 0.3, 2026-09-06. Status: agreed, RTL may start. Change from 0.2: the stall policy is stated
+> Version 0.4, 2026-09-06. Status: implemented; this version records the decisions taken while the RTL was
+> written (section 19). Change from 0.3: the sampling rule is stated from the falling edge (3.3, 12), the
+> status register writes on the rising edge with a bypass into decode (3.2), the shifter carry and the
+> special shift encodings are excluded (3.1), the UART is dropped by the area rule (3.4, 11), METER counts
+> in units of 16 (3.4), the ROM repeats every 64 bytes (3.5), the restart address is always the fetch
+> address (3.3). Change from 0.2: the stall policy is stated
 > (drain), the fetch interface is valid/ready, forwarding is documented as live only in ROM mode, the
 > internal ROM outranks the UART, the controller tick is parameterized, the counters become one meter.
 > Change from 0.1: the TinyVGA Pmod replaces the seven-segment digit, the UART sits behind the mode switch,
@@ -60,6 +65,13 @@ Flags follow the ARM definition. N is bit 15 of the result. Z is set when the re
 carry out of bit 15 on addition and NOT borrow on subtraction. V is signed overflow of the 16-bit result.
 CMP and TST always update the flags. LDR, STR and B never update the flags.
 
+Deviations decided during implementation (v0.4): the logical operations (AND, ORR, EOR, TST, MOV, MVN) and
+the shifter leave C and V unchanged; the ARM shifter-carry rule is not implemented. Shift amounts are the
+literal 5-bit immediate applied to the 16-bit value: LSL and LSR by 16 or more give 0, ASR by 16 or more
+gives the sign fill, ROR uses the amount modulo 16. The ARM special encodings LSR #0 (LSR #32), ASR #0
+(ASR #32) and ROR #0 (RRX) are not supported and the Python encoder rejects them. Loads and stores of r15
+execute as NOP. The TST and CMP opcodes with S = 0 (the MRS and MSR encodings) execute as NOP.
+
 ### 3.2 Pipeline
 
 Five stages: fetch, decode, execute, memory, write-back. Forwarding from the memory and write-back stages
@@ -67,7 +79,9 @@ into execute. Hazard detection stalls one cycle on a load-use dependency when fo
 on every read-after-write dependency when forwarding is off. A switch, latched at reset, selects forwarding
 on or off, so the two behaviours can be compared on silicon. A taken branch is resolved in execute and
 removes the two younger instructions. There is no branch prediction and no delay slot. The register file
-and the status register write on the falling clock edge, as in the lab design.
+writes on the falling clock edge, as in the lab design. The status register writes on the rising edge
+and its new value is bypassed into the decode stage's condition check, so a conditional instruction
+right after CMP sees the new flags in the same cycle without a half-period timing path (v0.4).
 
 **Stall policy: drain.** When the fetch stage has no instruction ready it passes a bubble to decode and
 the older instructions continue. The pipeline holds only for a data access in the memory stage or a hazard
@@ -94,12 +108,16 @@ One QSPI controller serves instruction fetch and data access over the shared Pmo
   version, and it takes the sampling strap as an integer, so a 1:1 memory clock later is a change inside
   the controller only.
 - A data access interrupts the instruction stream. The controller finishes the data access, then restarts
-  the instruction stream at the current program counter.
+  the instruction stream at the fetch address. Every abort (a taken branch, a write to r15, a data access)
+  drops the delivered word, so the fetch address is the only restart address (v0.4).
 - Reads use command EBh in single-command, quad-address, quad-data form on both chips. Writes use command
   38h on the PSRAM. No volatile chip mode is ever set. The chip boots from a cold Pmod.
 - The PSRAM chip select is never held low for longer than 6 us. A hard counter enforces it.
-- The receive sampling point is one full memory clock after the launch edge, plus a delay of 1 to 3 core
-  clocks set by two input pins while reset is active.
+- Both chips launch read data after the SCK falling edge (tCLQV). The engine captures the four lanes on
+  the core rising edge that is QSPI_DLY (1 to 3) core clocks after the core rising edge on which it cleared
+  its SCK register (the edge whose falling-edge copy clocks the nibble out of the chip): 20, 60 or 100 ns
+  after the pad falling edge. Strap 1 works for a multiplexer round trip up to 11 ns, strap 2 from 0 to
+  40 ns, strap 3 from 20 ns up (v0.4). QSPI_DLY = 0 acts as 1.
 - The memory clock is launched on the falling core edge, so data leads the clock by half a core cycle.
 - Data output pins hold their last value when the controller is idle.
 
@@ -115,7 +133,7 @@ Peripheral accesses take one cycle and do not touch the Pmod bus.
 | 0xFF04 | UART_DATA | read, write | write sends one byte; read returns the received byte and clears RX_VALID |
 | 0xFF06 | UART_STAT | read | bit 0 TX_BUSY, bit 1 RX_VALID, bit 2 RX_OVERRUN |
 | 0xFF08 | UART_DIV | read, write | core clocks per bit; reset value 217 gives 115,200 baud at 25 MHz |
-| 0xFF0C | METER | read | instructions retired during the previous video frame, 16 bits, latched at vertical sync (optional feature, see section 11) |
+| 0xFF0C | METER | read | instructions retired during the previous video frame divided by 16, latched at vertical sync (a ROM-mode frame retires about 360,000, which does not fit 16 bits) |
 
 | 0xFF10 | VGA_FG | read, write | bits [5:0] foreground colour, two bits each of red, green and blue; reset white |
 | 0xFF12 | VGA_BG | read, write | bits [5:0] background colour; reset black |
@@ -132,10 +150,16 @@ sweeps. Measured cost on sky130: 306 cells and 59 flip-flops including the timin
 The UART is 8 data bits, no parity, one stop bit. It has one transmit holding byte and one receive holding
 byte. RX_OVERRUN is set when a byte arrives while RX_VALID is set; it clears when UART_DATA is read.
 
+**v0.4: the UART is not built.** The design measured 80.4% of the tile after the QSPI engine landed and
+71.7% after the area work of section 19; the UART was dropped by the rule of section 11 before the meter.
+UART_EN still blanks the video and rests the transmit pin high, so the pin contract of section 7 holds;
+UART_DATA, UART_STAT and UART_DIV read 0 and writes to them do nothing.
+
 ### 3.5 Internal demo ROM
 
 When the BOOT_ROM pin is high at reset, the processor fetches addresses 0x0000 to 0x003F from a 16-instruction
-ROM inside the chip instead of the flash. The ROM holds a program of about 15 instructions that counts on the screen through VGA_VAL: registers
+ROM inside the chip instead of the flash (the ROM repeats every 64 bytes for any other fetch address in ROM
+mode; the program never leaves it). The ROM holds a program of about 15 instructions that counts on the screen through VGA_VAL: registers
 written before they are read, an eight-deep dependent chain in the loop so that the count rate changes
 about 2x with FWD_EN, no loads, and unused entries that branch to themselves. In ROM mode the QSPI
 controller is held idle with both chip selects high and the data pins as inputs, so a defective controller
@@ -441,3 +465,31 @@ any is wrong.
 1. Install `binutils-arm-none-eabi` on this machine, or rely on the Python encoder alone for the sprint.
 2. Confirm the repository name `ttsky26c-arm16` and create the GitHub repository when ready to push.
 3. Order one QSPI Pmod and one TinyVGA Pmod from the TinyTapeout store.
+
+## 19. Decisions taken during implementation (v0.4, 2026-09-06)
+
+Each item changed the RTL from the letter of v0.3; the reason is measured or reviewed, not assumed.
+
+1. Shifter carry and the `#0` shift encodings are out (section 3.1): about 50 cells and four special cases
+   with no demo value.
+2. Loads and stores of r15 and the MRS/MSR encodings execute as NOP (found by review: MRS decoded as a
+   flag-setting TST).
+3. Every abort restarts the stream at the fetch address; the delivered word is dropped (one source of
+   truth; keeping it would save 16 cycles per load at the cost of a second restart address).
+4. The engine requests the next stream word only when the controller reports room for it, and pauses
+   with SCK low and the chip select held at a word boundary otherwise.
+5. The sampling rule of section 3.3 is stated from the SCK falling edge; the v0.3 sentence ("one full
+   memory clock after the launch edge plus 1 to 3 core clocks") was wrong by half a period.
+6. The status register writes on the rising edge and is bypassed into decode; the register file keeps
+   its falling-edge write. Found by review: the falling-edge status register put the forwarding mux, the
+   shifter and the ALU on a 20 ns path.
+7. The delivered word register is the decode-stage instruction register; there is no separate IF/ID
+   register, and the fetch address is the program counter of the instruction in decode. Saved 48 flops
+   and a cycle of fetch latency when the design measured 80.4%.
+8. The ALU uses one adder for ADD, ADC, SUB and SBC; the shifter uses one rotator with masks. Together
+   with item 7 and the removal of the UART divider these brought the synthesis estimate from 80.4% to
+   71.7%.
+9. The UART is dropped (section 11 drop order); the meter stays and counts in units of 16.
+10. The demo ROM program (test/programs/demo_rom.s) counts the wraps of a 16-bit loop counter into
+    VGA_VAL: with forwarding on the display advances about 27 times per second, with forwarding off
+    about 2.3 times slower.

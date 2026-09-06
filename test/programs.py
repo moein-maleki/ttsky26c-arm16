@@ -130,7 +130,7 @@ DIRECTED = {
         ADDVS r3, r3, #0x100
         ADDGE r5, r5, #0x1000    ; N == V
         ADDGT r6, r6, #0x1000
-        .word 0xF0000000         ; a fetched word with condition 1111: never executes
+        .word 0xF3A00099         ; MOV r0, #0x99 with condition 1111: never executes
         B .
     """,
     "unsupported_nop": """
@@ -147,8 +147,11 @@ DIRECTED = {
         .word 0xE8BD0003         ; LDM
         .word 0xEF000000         ; SWI
         .word 0xE591F000         ; LDR pc, [r1]
+        .word 0xE581F000         ; STR pc, [r1]
         .word 0xE4910004         ; LDR r0, [r1], #4 (post-index)
         .word 0xE5D10000         ; LDRB r0, [r1]
+        .word 0xE10F1000         ; MRS r1, CPSR (TST opcode with S = 0): must not touch the flags
+        .word 0xE129F001         ; MSR CPSR_fc, r1 (CMP opcode with S = 0)
         MOV r3, #4
         B .
     """,
@@ -175,10 +178,11 @@ DIRECTED = {
     """,
     "regression_load_use": """
         MOV r2, #0xFF00
-        MOV r1, #0x77
-        STR r1, [r2, #0]
-        LDR r1, [r2, #0]         ; load
-        ADD r3, r1, #1           ; load-use: must see 0x77 -> 0x78
+        MOV r5, #0x77
+        STR r5, [r2, #0]
+        MOV r1, #0x11            ; the stale value a missing stall would consume
+        LDR r1, [r2, #0]         ; load: 0x77
+        ADD r3, r1, #1           ; load-use: must see 0x77 -> 0x78, not 0x12
         LDR r4, [r2, #0]
         MOV r5, #9               ; independent
         ADD r6, r4, r4           ; a load two instructions back
@@ -281,9 +285,10 @@ DIRECTED = {
 }
 
 
-def random_program(seed, length=30, loop=False):
-    """A random straight-line program (or one with a counted loop) in the subset, ROM-mode safe:
-    only peripheral memory accesses, forward conditional branches, registers written before read."""
+def random_program(seed, length=30, loop=False, psram=False):
+    """A random straight-line program (or one with a counted loop) in the subset: peripheral memory
+    accesses (and PSRAM accesses when psram=True), forward conditional branches, registers written before
+    read. r12 is the peripheral base and is reserved."""
     rng = random.Random(seed)
     regs = [r for r in range(15) if r != 12]
     lines = []
@@ -292,6 +297,10 @@ def random_program(seed, length=30, loop=False):
         lines.append("MOV r%d, #0x%X" % (r, rng.choice(IMMEDIATES)))
         live.append(r)
     lines.append("MOV r12, #0xFF00")
+    if psram:
+        lines.append("MOV r11, #0x8100")
+        if 11 not in live:
+            live.append(11)
     label = 0
     count = 0
     while count < length:
@@ -300,7 +309,7 @@ def random_program(seed, length=30, loop=False):
         cond = rng.choice(CONDS) if rng.random() < 0.3 else "AL"
         if kind < 0.45:
             op = rng.choice(DP_OPS)
-            rd = rng.choice(regs)
+            rd = rng.choice([r for r in regs if not (psram and r == 11)])
             rn = rng.choice(live)
             form = rng.random()
             if form < 0.45:
@@ -320,10 +329,16 @@ def random_program(seed, length=30, loop=False):
             op2 = "#0x%X" % rng.choice(IMMEDIATES) if rng.random() < 0.5 else "r%d" % rng.choice(live)
             lines.append("%s%s r%d, %s" % (op, cond, rng.choice(live), op2))
         elif kind < 0.72:
-            lines.append("STR%s r%d, [r12, #0]" % (cond, rng.choice(live)))
+            if psram and rng.random() < 0.7:
+                lines.append("STR%s r%d, [r11, #%d]" % (cond, rng.choice([r for r in live if r != 11]), rng.choice([0, 2, 4, 6, 8])))
+            else:
+                lines.append("STR%s r%d, [r12, #0]" % (cond, rng.choice(live)))
         elif kind < 0.82:
-            rd = rng.choice(regs)
-            lines.append("LDR%s r%d, [r12, #%d]" % (cond, rd, rng.choice([0, 2, 0x10, 0x12])))
+            rd = rng.choice([r for r in regs if r != 11])
+            if psram and rng.random() < 0.7:
+                lines.append("LDR%s r%d, [r11, #%d]" % (cond, rd, rng.choice([0, 2, 4, 6, 8])))
+            else:
+                lines.append("LDR%s r%d, [r12, #%d]" % (cond, rd, rng.choice([0, 2, 0x10, 0x12])))
             if cond == "AL" and rd not in live:
                 live.append(rd)
         elif kind < 0.9:

@@ -64,6 +64,7 @@ class Arm16Model:
         self.stores = 0
         self.loads = 0
         self.trace = []
+        self.written = set()
 
     # ------------------------------------------------------------------ memory and peripherals
     def fetch(self, pc):
@@ -102,15 +103,8 @@ class Arm16Model:
             return self.vga_val
         if off == SW:
             return self.sw
-        if off == UART_DATA:
-            value = self.rx_byte
-            self.rx_valid = False
-            self.rx_overrun = False
-            return value
-        if off == UART_STAT:
-            return (1 if self.rx_overrun else 0) << 2 | (1 if self.rx_valid else 0) << 1   # TX_BUSY = 0 in the model
-        if off == UART_DIV:
-            return self.uart_div
+        if off in (UART_DATA, UART_STAT, UART_DIV):
+            return 0                                 # the UART is not built (spec v0.4, plan D13)
         if off == METER:
             return self.meter
         if off == VGA_FG:
@@ -122,10 +116,6 @@ class Arm16Model:
     def write_peripheral(self, off, value):
         if off == VGA_VAL:
             self.vga_val = value
-        elif off == UART_DATA:
-            self.uart_tx_bytes.append(value & 0xFF)
-        elif off == UART_DIV:
-            self.uart_div = value
         elif off == VGA_FG:
             self.vga_fg = value & 0x3F
         elif off == VGA_BG:
@@ -172,12 +162,14 @@ class Arm16Model:
             addr = (base + d["imm12"]) & MASK if d["u"] else (base - d["imm12"]) & MASK
             if d["l"]:
                 self.regs[d["rd"]] = self.read16(addr)
+                self.written.add(d["rd"])
             else:
                 self.write16(addr, self.reg(d["rd"]))
             return next_pc
         if d["cls"] == "branch":
             if d["link"]:
                 self.regs[14] = (self.pc + 4) & MASK
+                self.written.add(14)
             return (self.pc + 8 + d["offset"]) & MASK
         return next_pc
 
@@ -223,6 +215,7 @@ class Arm16Model:
             if d["rd"] == 15:
                 return r & 0xFFFC
             self.regs[d["rd"]] = r
+            self.written.add(d["rd"])
         return next_pc
 
     def run(self, max_instr=100000, stop_at_self_branch=True):

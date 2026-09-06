@@ -253,3 +253,17 @@ def test_cross_check_binutils():
             subprocess.check_call(["arm-none-eabi-objcopy", "-O", "binary", "-j", ".text", d + "/p.o", d + "/p.bin"])
             theirs = open(d + "/p.bin", "rb").read()
         assert ours == theirs
+
+
+def test_shipped_demo_rom_matches_source():
+    """src/demo_rom.v carries exactly the words of programs/demo_rom.s (plan decision D8)."""
+    import re
+    here = os.path.dirname(os.path.abspath(__file__))
+    words = assemble(open(os.path.join(here, "programs", "demo_rom.s")).read())
+    assert len(words) == 16
+    rom = open(os.path.join(here, "..", "src", "demo_rom.v")).read()
+    found = {int(m.group(1)): int(m.group(2), 16) for m in re.finditer(r"4'd(\d+)\s*:\s*word_out = 32'h([0-9A-Fa-f]{8})", rom)}
+    assert [found[i] for i in range(16)] == words
+    # the program's shape (spec 3.5): unused entries branch to themselves, no loads
+    assert words[15] == 0xEAFFFFFE
+    assert all(decode(w)["cls"] != "ldst" or decode(w)["name"] == "STR" for w in words)

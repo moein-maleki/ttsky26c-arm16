@@ -1,6 +1,7 @@
 // Decode of the 32-bit ARM word into the subset of spec 3.1. Everything outside the subset decodes as a
-// NOP: no register write, no memory access, no branch, no flag change. Condition 1111 is the bubble
-// marker and reports valid_out = 0.
+// NOP: no register write, no memory access, no branch, no flag change (this includes the MRS and MSR
+// encodings, which are TST and CMP opcodes with S = 0, and loads or stores of r15). Condition 1111 is the
+// bubble marker and reports valid_out = 0.
 `default_nettype none
 module instruction_decoder (
     input  wire [31:0] instr_in,
@@ -79,8 +80,8 @@ module instruction_decoder (
     assign cond_out       = instr_in[31:28];
     assign operand2_out   = instr_in[11:0];
     assign branch_imm_out = instr_in[23:0];
-    assign dp_form_ok     = (mode == 2'b00) & (bit_i | ~bit_4);
-    assign ldst_form_ok   = (mode == 2'b01) & ~bit_i & bit_p & ~bit_b & ~bit_w & ~(bit_l & (field_rd == 4'd15));
+    assign dp_form_ok     = (mode == 2'b00) & (bit_i | ~bit_4) & ~((opcode[3:2] == 2'b10) & ~bit_s);
+    assign ldst_form_ok   = (mode == 2'b01) & ~bit_i & bit_p & ~bit_b & ~bit_w & (field_rd != 4'd15);
 
     always @* begin
         valid_out      = (instr_in[31:28] != 4'b1111);

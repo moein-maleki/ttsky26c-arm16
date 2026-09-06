@@ -65,6 +65,8 @@ def encode_immediate(value):
 
     The value must fit 16 bits (negative values are taken as 16-bit two's complement). Because the
     32-bit result fits 16 bits, the 16-bit ring rotation of the chip gives the same value (spec 3.1)."""
+    if not -32768 <= value <= 0xFFFF:
+        raise AsmError("immediate %d does not fit 16 bits" % value)
     value &= 0xFFFF
     for rot in range(16):
         s = 2 * rot
@@ -207,8 +209,8 @@ def encode(mnemonic, operands, cond=None, pc=0, labels=None):
         off = abs(off)
         if off > 4095:
             raise AsmError("offset out of range: %d" % off)
-        if base == "LDR" and rd == 15:
-            raise AsmError("LDR to r15 is not supported (spec 4)")
+        if rd == 15:
+            raise AsmError("%s of r15 is not supported (spec 4, plan D2)" % base)
         l_bit = 1 if base == "LDR" else 0
         return c | (0b01 << 26) | (1 << 24) | (u_bit << 23) | (l_bit << 20) | (rn << 16) | (rd << 12) | off
 
@@ -357,6 +359,8 @@ def decode(word):
         d["name"] = names[d["opcode"]]
         if d["name"] not in SUPPORTED_DP:
             d["cls"] = "nop"
+        if d["name"] in TEST_OPS and not d["s"]:
+            d["cls"] = "nop"           # MRS, MSR and friends: TST/CMP opcodes with S = 0
         if d["i"]:
             d["rot"], d["imm8"] = (word >> 8) & 0xF, word & 0xFF
         else:
@@ -373,8 +377,8 @@ def decode(word):
         d["name"] = "LDR" if d["l"] else "STR"
         if d["i"] or not d["p"] or d["b"] or d["w"]:
             d["cls"] = "nop"
-        if d["l"] and d["rd"] == 15:
-            d["cls"] = "nop"           # plan decision D2
+        if d["rd"] == 15:
+            d["cls"] = "nop"           # plan decision D2: loads and stores of r15 are NOPs
     elif mode == 2:
         if (word >> 25) & 1:
             d["cls"] = "branch"
