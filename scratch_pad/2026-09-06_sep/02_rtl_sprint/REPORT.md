@@ -165,8 +165,9 @@ classifier of the session blocked the push from the agent; the remote is SSH now
 | 34042869988 | docs | `2c546d4` | success |
 | 34042869875 | test | `2c546d4` | success: 51 pass, 0 fail, 1 skip |
 | 34042870023 | gds | `2c546d4` | success: `gds` 11 minutes, `precheck` 15 of 15, `gl_test` 11 pass, 0 fail, 41 skip (25 minutes; the delay-sweep table matches), `viewer` deployed after Pages was enabled with the GitHub Actions source; artifact verifier PASS (`evidence/ci/run2_2c546d4_34042870023/`) |
+| 34044878183, 34044878214, 34044878215 | test, docs, gds | `42ba458` (this report and the CI evidence, no RTL change) | all success; `gl_test` 11 pass, 0 fail; metrics identical to run 34042870023; artifact verifier PASS (`evidence/ci/run3_42ba458_34044878215/`) |
 
-**Commit to submit: `2c546d4`, gds run 34042870023** (`https://github.com/moein-maleki/ttsky26c-arm16/actions/runs/34042870023`).
+**Commit to submit: `2c546d4`, gds run 34042870023, or the head `42ba458`, gds run 34044878215; the GDS is the same** (`https://github.com/moein-maleki/ttsky26c-arm16/actions/runs/34042870023`).
 Both CI hardens (LibreLane 3.0.5 on the runner) reproduce local run 3 (LibreLane 3.0.3) in every metric:
 74.99% placed, 6,126 cells, setup +6.872 ns, hold +0.108 ns, DRC, LVS and antenna 0, and the same 1,969 / 27 / 21
 design-rule counts. The GDS viewer is at `https://moein-maleki.github.io/ttsky26c-arm16/`. Remaining for the

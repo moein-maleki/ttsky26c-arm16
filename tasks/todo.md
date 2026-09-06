@@ -17,8 +17,8 @@
 The user's action (app.tinytapeout.com, before 2026-09-07 20:00 UTC): repository
 `https://github.com/moein-maleki/ttsky26c-arm16`, commit `2c546d4`, the gds run
 `https://github.com/moein-maleki/ttsky26c-arm16/actions/runs/34042870023` (all three workflows green; the
-artifacts verified in `scratch_pad/2026-09-06_sep/02_rtl_sprint/evidence/ci/run2_2c546d4_34042870023/`). A
-later docs-only push starts an identical gds run; submit when the latest gds run is green. Then order one
+artifacts verified in `scratch_pad/2026-09-06_sep/02_rtl_sprint/evidence/ci/run2_2c546d4_34042870023/`). The
+docs-only head `42ba458` (gds run 34044878215) is green too with identical metrics; either commit is fine. Then order one
 QSPI Pmod and one TinyVGA Pmod (store.tinytapeout.com); cut jumpers JP2 to JP9 before the first run; set the
 flash quad-enable bit once at bring-up (spec 15).
 
