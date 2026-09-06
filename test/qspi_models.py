@@ -138,7 +138,7 @@ class ChipModel:
                     self.error("data changed %.1f ns before the SCK rising edge of period %d" % (now - self.sd_last_change_ns, period))
                 if period < 8:
                     if oe != 0b0001:
-                        self.error("command period %d drives lanes %04b, expected 0001" % (period, oe))
+                        self.error("command period %d drives lanes %s, expected 0001" % (period, format(oe, "04b")))
                     command = ((command << 1) | (sd & 1)) & 0xFF
                     if period == 7:
                         self.commands.append(command)
@@ -148,7 +148,7 @@ class ChipModel:
                             reading = True
                 elif period < 14:
                     if oe != 0b1111:
-                        self.error("address period %d drives lanes %04b" % (period, oe))
+                        self.error("address period %d drives lanes %s" % (period, format(oe, "04b")))
                     address = ((address << 4) | sd) & 0xFFFFFF
                     if period == 13:
                         self.first_addresses.append(address)
@@ -156,14 +156,14 @@ class ChipModel:
                             self.error("address %06X outside the %d-byte array" % (address, self.size))
                 elif self.has_mode_byte and period < 16:
                     if oe != 0b1111:
-                        self.error("mode period %d drives lanes %04b" % (period, oe))
+                        self.error("mode period %d drives lanes %s" % (period, format(oe, "04b")))
                     mode = ((mode << 4) | sd) & 0xFF
                     if period == 15 and (mode & 0x30) == 0x20:
                         self.error("mode byte %02X arms continuous read" % mode)
                 elif not reading and period >= 14:
                     # linear burst: every clocked-in byte lands in memory (the real part keeps writing)
                     if oe != 0b1111:
-                        self.error("write data period %d drives lanes %04b" % (period, oe))
+                        self.error("write data period %d drives lanes %s" % (period, format(oe, "04b")))
                     write_nibbles.append(sd)
                     if len(write_nibbles) % 2 == 0:
                         byte = (write_nibbles[-2] << 4) | write_nibbles[-1]
@@ -174,7 +174,7 @@ class ChipModel:
                         self.write_event.set()
                 else:
                     if reading and oe != 0:
-                        self.error("master drives lanes %04b during period %d of a read" % (oe, period))
+                        self.error("master drives lanes %s during period %d of a read" % (format(oe, "04b"), period))
                 if oe:
                     # hold: no edge on the data lanes or their enables for 5 ns after the SCK rising edge
                     trig = await First(Edge(self.dut.sd_out), Edge(self.dut.sd_oe), Timer(5, unit="ns"))

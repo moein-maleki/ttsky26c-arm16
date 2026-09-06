@@ -386,11 +386,9 @@ class FlashRun:
         layout = asm.EPILOGUE_LAYOUT
         done_addr = DUMP_BASE + 2 * layout["done_slot"]
         deadline = get_sim_time_ns() + timeout_us * 1000
-        while True:
-            await with_timeout(self.psram.write_event.wait(), timeout_us * 1000, "ns")
+        while self.psram.word(done_addr) != layout["done_value"]:
             self.psram.write_event.clear()
-            if self.psram.last_write and self.psram.last_write[0] == (done_addr - 0x8000) and self.psram.last_write[1] == layout["done_value"]:
-                break
+            await with_timeout(self.psram.write_event.wait(), timeout_us * 1000, "ns")
             assert get_sim_time_ns() < deadline, "timeout waiting for the done marker"
         await ClockCycles(self.dut.clk, 20)
         self.stop()
@@ -522,10 +520,10 @@ async def test_flash_literal_load(dut):
     """LDR from a literal pool in the flash reads the 16-bit little-endian word at the byte address."""
     start_clock(dut)
     src = """
-        MOV r0, #0x54
-        LDR r1, [r0, #0]         ; low half of the literal at 0x54 (word 21: 15 init words + 6)
+        MOV r0, #0x50
+        LDR r1, [r0, #0]         ; low half of the literal at 0x50 (word 20: 15 init words + 5)
         LDR r2, [r0, #2]         ; high half
-        LDR r3, [r15, #0x08]     ; pc-relative: this LDR sits at 0x48, pc + 8 + 8 = 0x58 = the second literal
+        LDR r3, [r15, #4]        ; pc-relative: this LDR sits at 0x48, pc + 8 + 4 = 0x54 = the second literal
         B skip
         .word 0xBEEFCAFE
         .word 0x12345678
@@ -534,7 +532,7 @@ async def test_flash_literal_load(dut):
     """
     run = await FlashRun(dut, src).run()
     run.check()
-    # the literal pool sits at word 15 + 6 = 0x54 after the register init; r1 and r2 read its halves
+    # the literal pool sits at word 15 + 5 = 0x50 after the register init; r1 and r2 read its halves
     assert run.model_word(DUMP_BASE + 2 * 1) == 0xCAFE and run.model_word(DUMP_BASE + 2 * 2) == 0xBEEF, \
         "the literal pool moved: r1 0x%04X r2 0x%04X" % (run.model_word(DUMP_BASE + 2), run.model_word(DUMP_BASE + 4))
 
@@ -548,6 +546,7 @@ async def test_backpressure_hold(dut):
     run.start_models()
     d = dp(dut)
     c = ctl(dut)
+    # (stopped by run_to_done at the end)
     # let the stream deliver a few words, then force a hazard stall for 60 cycles (more than three word times)
     accepted = 0
     while accepted < 3:
@@ -585,7 +584,7 @@ async def _run_to_done(self):
     layout = asm.EPILOGUE_LAYOUT
     done_addr = DUMP_BASE + 2 * layout["done_slot"]
     for _ in range(200):
-        if self.psram.last_write and self.psram.last_write[0] == (done_addr - 0x8000) and self.psram.last_write[1] == layout["done_value"]:
+        if self.psram.word(done_addr) == layout["done_value"]:
             await ClockCycles(self.dut.clk, 20)
             self.stop()
             return
@@ -642,7 +641,8 @@ async def test_psram_write_read(dut):
     fill:
         STR r6, [r7, #0]
         ADD r7, r7, #2
-        ADD r6, r6, #0x301
+        ADD r6, r6, #0x300
+        ADD r6, r6, #1
         SUBS r5, r5, #1
         BNE fill
         MOV r5, #64
@@ -683,10 +683,8 @@ async def test_tcem_hard_counter(dut):
     engine = dp(dut).qspi_master_unit
     await FallingEdge(dut.cs_ram_n)
     await ClockCycles(dut.clk, 10)
-    engine.present_state.value = Force(2)  # hold E_DATA: the read never completes
-    await ClockCycles(dut.clk, 160)
-    engine.present_state.value = Release()
-    await ClockCycles(dut.clk, 3)
+    engine.cap_pipe.value = Force(7)       # a capture that never lands: E_STOP waits for the pipeline to drain
+    await with_timeout(RisingEdge(dut.cs_ram_n), 8000, "ns")   # the hard counter must raise it before tCEM
     await Timer(SAMPLE_NS, unit="ns")
     assert int(dut.cs_ram_n.value) == 1, "the hard counter did not raise the PSRAM select"
     assert int(dut.qspi_sck.value) == 0 and int(dut.sd_oe.value) == 0, "SCK or the lanes stayed active after the timeout"
@@ -695,6 +693,7 @@ async def test_tcem_hard_counter(dut):
     assert 5900 < low < 6100, "chip select low for %.0f ns, expected about 6,040" % low
     assert not run.psram.errors, run.psram.errors
     assert not run.monitor.errors, run.monitor.errors
+    engine.cap_pipe.value = Release()      # the stream restarts on the flash afterwards, which is correct
     run.stop()
 
 
@@ -832,10 +831,13 @@ async def test_demo_draws_end_to_end(dut):
     run = FlashRun(dut, src)
     await reset_dut(dut, run.ui)
     run.start_models()
-    # the program writes the registers within about 1,500 cycles; the band starts at line 160
-    await capture_band(dut, range(160, 320, 8 if GL else 1), 0x1A2F, 0x2A, 0x15)
-    await run.run_to_done()
-    run.check()
+    try:
+        # the program writes the registers within about 1,500 cycles; the band starts at line 160
+        await capture_band(dut, range(160, 320, 8 if GL else 1), 0x1A2F, 0x2A, 0x15)
+        await run.run_to_done()
+        run.check()
+    finally:
+        run.stop()
 
 
 @cocotb.test()
@@ -845,8 +847,10 @@ async def test_rom_mode_band(dut):
     start_clock(dut)
     await reset_dut(dut, pins(boot_rom=1))
     quiet = cocotb.start_soon(_bus_quiet_watch(dut))
-    await capture_band(dut, range(160, 320, 8 if GL else 1), 0x0000, 0x3F, 0x00)
-    quiet.cancel()
+    try:
+        await capture_band(dut, range(160, 320, 8 if GL else 1), 0x0000, 0x3F, 0x00)
+    finally:
+        quiet.cancel()
 
 
 async def _bus_quiet_watch(dut):
