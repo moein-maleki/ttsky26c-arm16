@@ -18,3 +18,11 @@ tt/
 # python caches
 __pycache__/
 .pytest_cache/
+
+# session work products stay local: plans, reports, evidence, handoffs, task lists
+scratch_pad/
+handoff/
+tasks/
+docs/*
+!docs/spec.md
+!docs/info.md
