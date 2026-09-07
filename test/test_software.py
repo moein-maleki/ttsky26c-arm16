@@ -12,6 +12,7 @@ import pytest
 import arm16_asm as asm
 from arm16_asm import AsmError, assemble, build_flash_image, decode, encode, epilogue
 from arm16_model import Arm16Model, condition_met, shift_operand
+from programs import ordered_stream
 
 KNOWN = [
     ("MOV", "r0, #20", 0xE3A00014),
@@ -95,12 +96,21 @@ def test_decode_round_trip():
 
 def test_immediate_ring_property():
     """Every 16-bit constant the 32-bit encoding produces has the same value in the 16-bit ring."""
+    representable = set()
+    for rotation in range(0, 32, 2):
+        for byte in range(256):
+            bits = f"{byte:032b}"
+            rotated = bits[-rotation:] + bits[:-rotation] if rotation else bits
+            value = int(rotated, 2)
+            if value < 0x10000:
+                representable.add(value)
     for value in range(0x10000):
-        try:
+        if value in representable:
             rot, imm8 = asm.encode_immediate(value)
-        except AsmError:
-            continue
-        assert asm.rotate_right_16(imm8, 2 * rot) == value
+            assert asm.rotate_right_16(imm8, 2 * rot) == value
+        else:
+            with pytest.raises(AsmError):
+                asm.encode_immediate(value)
 
 
 def run_words(words, **kw):
@@ -158,10 +168,13 @@ def test_shifts_definition():
 
 
 def test_conditions_table():
-    n, z, c, v = True, False, True, False
-    assert condition_met(4, n, z, c, v) and condition_met(2, n, z, c, v) and condition_met(8, n, z, c, v)
-    assert not condition_met(9, n, z, c, v) and not condition_met(15, n, z, c, v) and condition_met(14, n, z, c, v)
-    assert condition_met(11, True, False, False, False) and condition_met(13, True, False, False, False)
+    # Bit f is the expected answer for NZCV=f. These truth tables are independent of the model code.
+    truth = [0xF0F0, 0x0F0F, 0xCCCC, 0x3333, 0xFF00, 0x00FF, 0xAAAA, 0x5555,
+             0x0C0C, 0xF3F3, 0xAA55, 0x55AA, 0x0A05, 0xF5FA, 0xFFFF, 0x0000]
+    for cond, mask in enumerate(truth):
+        for flags in range(16):
+            nzcv = [bool(flags & bit) for bit in (8, 4, 2, 1)]
+            assert condition_met(cond, *nzcv) == bool(mask & (1 << flags)), (cond, flags)
 
 
 def test_image_loading():
@@ -238,8 +251,9 @@ def test_epilogue_layout():
     assert dump[layout["flags_slot"]] == m.flags_word()
 
 
-@pytest.mark.skipif(shutil.which("arm-none-eabi-as") is None, reason="binutils-arm-none-eabi not installed")
 def test_cross_check_binutils():
+    for tool in ("arm-none-eabi-as", "arm-none-eabi-ld", "arm-none-eabi-objcopy"):
+        assert shutil.which(tool), f"required GNU comparison tool is missing: {tool}"
     programs = [
         "MOV r0, #20\nADDS r1, r2, r3\nSUBNE r4, r5, #1\nLDR r0, [r1, #4]\nSTR r0, [r1, #-4]\nMOV pc, lr\nMOV r1, #0xFF00\nMOV r2, r3, LSL #4\nCMP r0, #0\nTST r1, r2\nMVN r3, #0",
         "loop: ADD r1, r1, #2\nSUBS r0, r0, #1\nBNE loop\nBL loop\nB .",
@@ -250,7 +264,8 @@ def test_cross_check_binutils():
             s = os.path.join(d, "p.s")
             open(s, "w").write(".arm\n.text\n" + src + "\n")
             subprocess.check_call(["arm-none-eabi-as", "-march=armv4", "-o", d + "/p.o", s])
-            subprocess.check_call(["arm-none-eabi-objcopy", "-O", "binary", "-j", ".text", d + "/p.o", d + "/p.bin"])
+            subprocess.check_call(["arm-none-eabi-ld", "-Ttext=0", "-e", "0", "-o", d + "/p.elf", d + "/p.o"])
+            subprocess.check_call(["arm-none-eabi-objcopy", "-O", "binary", "-j", ".text", d + "/p.elf", d + "/p.bin"])
             theirs = open(d + "/p.bin", "rb").read()
         assert ours == theirs
 
@@ -267,3 +282,72 @@ def test_shipped_demo_rom_matches_source():
     # the program's shape (spec 3.5): unused entries branch to themselves, no loads
     assert words[15] == 0xEAFFFFFE
     assert all(decode(w)["cls"] != "ldst" or decode(w)["name"] == "STR" for w in words)
+
+
+@pytest.mark.parametrize("flags", range(16))
+def test_epilogue_preserves_and_dumps_every_flag_state(flags):
+    model = Arm16Model(build_flash_image(assemble(epilogue())))
+    initial_regs = list(model.regs)
+    model.n, model.z, model.c, model.v = [bool(flags & bit) for bit in (8, 4, 2, 1)]
+    model.vga_val, model.vga_fg, model.vga_bg = 0xA53C, 0x2A, 0x15
+    assert model.run() < 100
+    def word(slot):
+        off = 0x9F00 - 0x8000 + 2 * slot
+        return int.from_bytes(model.psram[off:off + 2], "little")
+    for slot, reg in enumerate(asm.EPILOGUE_LAYOUT["regs"]):
+        assert word(slot) == initial_regs[reg]
+    assert word(14) == flags and model.flags_word() == flags
+    assert [word(slot) for slot in (16, 17, 18)] == [0xA53C, 0x2A, 0x15]
+    assert word(15) == 0xCE
+
+
+@pytest.mark.parametrize("operation", ["ADDS", "ADCS", "SUBS", "SBCS"])
+def test_arithmetic_boundaries_from_integer_definition(operation):
+    def signed(value):
+        return value if value < 0x8000 else value - 0x10000
+    word = encode(operation, "r0, r1, r2")
+    for a in (0, 1, 0x7FFF, 0x8000, 0xFFFE, 0xFFFF):
+        for b in (0, 1, 0x7FFF, 0x8000, 0xFFFE, 0xFFFF):
+            for carry in (0, 1):
+                model = Arm16Model(build_flash_image([word]))
+                model.regs[1:3] = [a, b]
+                model.c = bool(carry)
+                if operation.startswith("ADD") or operation == "ADCS":
+                    extra = carry if operation == "ADCS" else 0
+                    total = a + b + extra
+                    mathematical = signed(a) + signed(b) + extra
+                    expected_carry = total > 0xFFFF
+                else:
+                    extra = 1 - carry if operation == "SBCS" else 0
+                    total = a - b - extra
+                    mathematical = signed(a) - signed(b) - extra
+                    expected_carry = total >= 0
+                expected = total & 0xFFFF
+                model.step()
+                assert model.regs[0] == expected
+                assert (model.n, model.z, model.c, model.v) == (
+                    bool(expected & 0x8000), expected == 0, expected_carry,
+                    not -32768 <= mathematical <= 32767), (operation, a, b, carry)
+
+
+def test_ordered_stream_detects_swapped_operations():
+    source = ordered_stream(62)
+    words = assemble(source + "\nB .")
+    swapped = list(words)
+    swapped[1], swapped[2] = swapped[2], swapped[1]
+    expected = Arm16Model(build_flash_image(words))
+    changed = Arm16Model(build_flash_image(swapped))
+    expected.run()
+    changed.run()
+    assert changed.regs[0] != expected.regs[0], "the stream check cannot detect an adjacent swap"
+
+
+def test_branch_program_is_origin_independent():
+    from programs import DIRECTED
+    for origin in (0, 60, 0x100):
+        words = assemble(DIRECTED["branches"], origin=origin)
+        model = Arm16Model(build_flash_image(words, origin=origin))
+        model.pc = origin
+        assert model.run(max_instr=100) < 100
+        assert model.regs[0] == 1 and model.regs[5] == 0x55
+        assert model.pc == origin + 4 * (len(words) - 1)

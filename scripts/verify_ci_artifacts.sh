@@ -6,7 +6,7 @@ if [[ "$#" -ne 3 ]]; then
     printf 'usage: %s <artifact-root> <commit-sha> <gds-run-id>\n' "$0" >&2
     exit 2
 fi
-artifact_root="$1"; expected_commit="$2"; expected_run="$3"
+artifact_root=$(cd "$1" && pwd); expected_commit="$2"; expected_run="$3"
 metadata="$artifact_root/tt_submission/tt_submission/commit_id.json"
 pdk="$artifact_root/tt_submission/tt_submission/pdk.json"
 metrics="$artifact_root/GDS_logs/runs/wokwi/final/metrics.json"
@@ -32,6 +32,15 @@ jq -e '
 grep -q 'top_module:  "tt_um_moein_maleki_arm16"' "$info"
 grep -q 'clock_hz:     25000000' "$info"
 grep -q 'tiles: "2x2"' "$info"
-! grep -q '<failure\|<error' "$precheck"
+checker_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+python3 "$checker_dir/check_results.py" "$precheck" \
+    --require 'Magic DRC' --require 'KLayout FEOL' --require 'KLayout BEOL' \
+    --require 'KLayout offgrid' --require 'KLayout pin label overlapping drawing' \
+    --require 'KLayout zero area' --require 'KLayout Checks' --require 'Pin check' \
+    --require 'Boundary check' --require 'Power pin check' --require 'Layer check' \
+    --require 'Cell name check' --require 'urpm/nwell check' --require 'Analog pin check' \
+    --require 'Verilog syntax check'
+python3 "$checker_dir/check_signoff.py" "$artifact_root/GDS_logs/runs/wokwi" \
+    tt_um_moein_maleki_arm16 "$artifact_root/tt_submission"
 jq -r '"utilization \(.["design__instance__utilization"])  setup ws \(.["timing__setup__ws"])  hold ws \(.["timing__hold__ws"])  cells \(.["design__instance__count__stdcell"])"' "$metrics"
 printf 'CI artifact verification: PASS\n'

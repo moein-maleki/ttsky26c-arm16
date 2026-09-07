@@ -1,0 +1,50 @@
+{
+  "directed_programs": [
+    "dataproc_immediate", "dataproc_register", "shifts", "branches", "conditions",
+    "unsupported_nop", "peripherals", "regression_load_use", "regression_branch_beats_stall",
+    "regression_flags_untouched", "regression_mov_keeps_carry", "regression_ls_condition",
+    "bubble_never_writes", "dependent_chain", "counted_loop"
+  ],
+  "common_required": [
+    "test_stream_sequence", "test_restart_on_branch", "test_data_access_interleave",
+    "test_flash_literal_load", "test_delay_sweep", "test_psram_write_read",
+    "test_tcem_and_idle_pins", "test_random_differential_flash", "test_negative_byte_order",
+    "test_negative_stream_order", "test_demo_draws_end_to_end", "test_rom_mode_band",
+    "test_pin_monitor_rejects_early_sync", "test_qe_zero_rejects_quad_read_then_same_model_recovers",
+    "test_memory_state_survives_reset_at_each_transfer_phase"
+  ],
+  "software": {
+    "required": ["test_cross_check_binutils", "test_stale_generation_cannot_drive_reselected_flash",
+                 "test_old_chip_release_cannot_clear_new_chip_drive", "test_psram_poison_is_repeatable_and_not_zero_filled"],
+    "allowed_skips": []
+  },
+  "rtl": {
+    "include_common": true,
+    "directed_modes": ["rom"],
+    "required": ["test_random_differential", "test_hazard_stall_counts", "test_demo_rom_program_counts",
+                 "test_negative_known_mismatch", "test_rom_boot", "test_vga_frame_capture",
+                 "test_hardware_view", "test_meter", "test_backpressure_hold", "test_tcem_hard_counter"],
+    "allowed_skips": ["test_flash_directed_*", "test_shipped_rom_boot", "test_shipped_rom_visible_progress", "test_dead_rom_rejected_by_visible_progress"]
+  },
+  "rom": {
+    "include_common": true,
+    "directed_modes": ["flash"],
+    "required": ["test_shipped_rom_boot", "test_shipped_rom_visible_progress", "test_backpressure_hold", "test_tcem_hard_counter"],
+    "allowed_skips": ["test_directed_*", "test_random_differential", "test_hazard_stall_counts",
+                      "test_demo_rom_program_counts", "test_negative_known_mismatch", "test_rom_boot",
+                      "test_vga_frame_capture", "test_hardware_view", "test_meter", "test_dead_rom_rejected_by_visible_progress"]
+  },
+  "gate": {
+    "include_common": true,
+    "directed_modes": ["flash"],
+    "required": ["test_shipped_rom_visible_progress"],
+    "allowed_skips": ["test_directed_*", "test_random_differential", "test_hazard_stall_counts",
+                      "test_demo_rom_program_counts", "test_negative_known_mismatch", "test_rom_boot",
+                      "test_vga_frame_capture", "test_hardware_view", "test_meter", "test_backpressure_hold",
+                      "test_tcem_hard_counter", "test_shipped_rom_boot", "test_dead_rom_rejected_by_visible_progress"]
+  },
+  "dead-rom": {
+    "required": ["test_dead_rom_rejected_by_visible_progress"],
+    "allowed_skips": ["test_shipped_rom_visible_progress", "test_pin_monitor_rejects_early_sync"]
+  }
+}

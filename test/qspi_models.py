@@ -38,21 +38,66 @@ class QspiBus:
 
     def __init__(self, dut):
         self.dut = dut
+        self.errors = []
+        self._owner = None
+        self._generation = None
+        self._release_owner = None
+        self._release_generation = None
         self.release()
 
-    def drive(self, nibble):
+    def begin(self, owner, generation):
+        if self._owner is not None and (self._owner is not owner or self._generation != generation):
+            self.errors.append("two QSPI chips attempted to own the input lanes")
+            self.dut.uio_in.value = LogicArray("00XX0XX0")
+            return False
+        self._owner = owner
+        self._generation = generation
+        self._release_owner = None
+        self._release_generation = None
+        return True
+
+    def end(self, owner, generation):
+        if self._owner is not owner or self._generation != generation:
+            return False
+        self._owner = None
+        self._generation = None
+        self._release_owner = owner
+        self._release_generation = generation
+        return True
+
+    def drive(self, nibble, owner=None, generation=None):
+        if owner is not None and (self._owner is not owner or self._generation != generation):
+            return False
         v = 0
         v |= (nibble & 1) << 1
         v |= ((nibble >> 1) & 1) << 2
         v |= ((nibble >> 2) & 1) << 4
         v |= ((nibble >> 3) & 1) << 5
         self.dut.uio_in.value = v
+        return True
 
-    def drive_x(self):
+    def drive_x(self, owner=None, generation=None):
+        if owner is not None and (self._owner is not owner or self._generation != generation):
+            return False
         self.dut.uio_in.value = LogicArray("00XX0XX0")
+        return True
 
-    def release(self):
+    def release(self, owner=None, generation=None):
+        if owner is not None:
+            if self._owner is not None:
+                return False
+            if self._release_owner is not owner or self._release_generation != generation:
+                return False
+        self._owner = None
+        self._generation = None
+        self._release_owner = None
+        self._release_generation = None
         self.dut.uio_in.value = 0
+        return True
+
+    def cancel(self, owner):
+        if self._owner is owner or self._release_owner is owner:
+            self.release()
 
 
 class ChipModel:
@@ -80,6 +125,7 @@ class ChipModel:
         self.last_cs_rise_ns = None
         self.sd_last_change_ns = None
         self.selected = False
+        self.generation = 0
         self._tasks = []
         self.write_event = Event()
         self.last_write = None
@@ -96,6 +142,8 @@ class ChipModel:
             t.cancel()
         self._tasks = []
         self.selected = False
+        self.generation += 1
+        self.bus.cancel(self)
 
     async def _monitor_sd(self):
         while True:
@@ -109,22 +157,29 @@ class ChipModel:
         while True:
             await FallingEdge(self.cs)
             t_low = get_sim_time("ns")
+            self.generation += 1
+            generation = self.generation
+            self.selected = True
+            if not self.bus.begin(self, generation):
+                self.error("could not own the QSPI input lanes")
             if self.last_cs_rise_ns is not None and t_low - self.last_cs_rise_ns < self.min_cs_high_ns():
                 self.error("chip select re-selected after %.1f ns, minimum %.1f" % (t_low - self.last_cs_rise_ns, self.min_cs_high_ns()))
             sck = resolved(self.dut.qspi_sck)
             if sck is None:
-                self._abandon(0, "SCK at the chip select fall")
+                self._abandon(0, "SCK at the chip select fall", generation)
                 continue
             if sck != 0:
                 self.error("chip select fell while SCK was high")
-            self.selected = True
             self.transactions += 1
-            await self.transaction(t_low)
+            await self.transaction(t_low, generation)
 
     def min_cs_high_ns(self):
         return T_SHSL_NS
 
-    async def transaction(self, t_low):
+    def command_allowed(self, command):
+        return True
+
+    async def transaction(self, t_low, generation):
         period = 0
         command = 0
         address = 0
@@ -132,14 +187,14 @@ class ChipModel:
         write_nibbles = []
         data_start = self.data_start_period()
         reading = None
-        drive_tasks = []
+        command_blocked = False
         while True:
             trig = await First(RisingEdge(self.dut.qspi_sck), FallingEdge(self.dut.qspi_sck), RisingEdge(self.cs))
             now = get_sim_time("ns")
             cs = resolved(self.cs)
             sck = resolved(self.dut.qspi_sck)
             if cs is None or sck is None:
-                self._abandon(period, "chip select or SCK")
+                self._abandon(period, "chip select or SCK", generation)
                 return
             if trig is RisingEdge(self.cs) or cs == 1:
                 break
@@ -148,7 +203,7 @@ class ChipModel:
                 sd = resolved(self.dut.sd_out)
                 oe = resolved(self.dut.sd_oe)
                 if sd is None or oe is None:
-                    self._abandon(period, "the lanes or the lane enable")
+                    self._abandon(period, "the lanes or the lane enable", generation)
                     return
                 if self.sd_last_change_ns is not None and now - self.sd_last_change_ns < 5.0 and oe:
                     self.error("data changed %.1f ns before the SCK rising edge of period %d" % (now - self.sd_last_change_ns, period))
@@ -158,8 +213,9 @@ class ChipModel:
                     command = ((command << 1) | (sd & 1)) & 0xFF
                     if period == 7:
                         self.commands.append(command)
-                        reading = self.is_read(command)
-                        if reading is None:
+                        command_blocked = not self.command_allowed(command)
+                        reading = None if command_blocked else self.is_read(command)
+                        if reading is None and not command_blocked:
                             self.error("unknown command %02X" % command)
                             reading = True
                 elif period < 14:
@@ -176,6 +232,8 @@ class ChipModel:
                     mode = ((mode << 4) | sd) & 0xFF
                     if period == 15 and (mode & 0x30) == 0x20:
                         self.error("mode byte %02X arms continuous read" % mode)
+                elif command_blocked:
+                    pass
                 elif not reading and period >= 14:
                     # linear burst: every clocked-in byte lands in memory (the real part keeps writing)
                     if oe != 0b1111:
@@ -200,7 +258,7 @@ class ChipModel:
                 # falling edge of `period`: a read launches nibble (period - data_start + 1)
                 if reading and period >= data_start - 1:
                     nib_index = period - (data_start - 1)
-                    self._tasks.append(cocotb.start_soon(self._drive_nibble(address, nib_index, now)))
+                    self._tasks.append(cocotb.start_soon(self._drive_nibble(address, nib_index, generation)))
                 period += 1
         t_high = get_sim_time("ns")
         self.transaction_bytes.append(self.bytes_out - sum(self.transaction_bytes))
@@ -211,39 +269,42 @@ class ChipModel:
         sck = resolved(self.dut.qspi_sck)
         if sck is None:
             self.error("SCK unresolvable when the chip select rose")
-        elif sck != 0:
+        elif sck != 0 and resolved(self.dut.rst_n) != 0:
             self.error("chip select rose while SCK was high")
         self.selected = False
-        cocotb.start_soon(self._release_after(self.round_trip / 2 + 7.0))
+        self.bus.end(self, generation)
+        self._tasks.append(cocotb.start_soon(self._release_after(self.round_trip / 2 + 7.0, generation)))
 
     def max_cs_low_ns(self):
         return 1e12
 
-    def _abandon(self, period, what):
+    def _abandon(self, period, what, generation):
         """Stop decoding: a control pin is X or Z. The error fails check(); the lanes go idle."""
         self.error("%s unresolvable in period %d at %.0f ns" % (what, period, get_sim_time("ns")))
         self.selected = False
-        self.bus.release()
+        self.bus.end(self, generation)
+        self.bus.release(self, generation)
 
-    async def _drive_nibble(self, address, nib_index, t_fall):
+    async def _drive_nibble(self, address, nib_index, generation):
         """Drive X then the nibble on the lanes, delayed by the round trip; only while selected."""
         await Timer(self.round_trip + T_CLQX_NS, unit="ns")
-        if not self.selected:
+        if not self.selected or generation != self.generation:
             return
-        self.bus.drive_x()
+        if not self.bus.drive_x(self, generation):
+            return
         await Timer(T_CLQV_NS - T_CLQX_NS, unit="ns")
-        if not self.selected:
+        if not self.selected or generation != self.generation:
             return
         byte = self.mem[(address + nib_index // 2) % self.size]
         nibble = (byte >> 4) & 0xF if nib_index % 2 == 0 else byte & 0xF
-        self.bus.drive(nibble)
+        if not self.bus.drive(nibble, self, generation):
+            return
         if nib_index % 2 == 1:
             self.bytes_out += 1
 
-    async def _release_after(self, delay_ns):
+    async def _release_after(self, delay_ns, generation):
         await Timer(delay_ns, unit="ns")
-        if not self.selected:
-            self.bus.release()
+        self.bus.release(self, generation)
 
     def is_read(self, command):
         raise NotImplementedError
@@ -254,9 +315,20 @@ class FlashModel(ChipModel):
     read_wait_periods = 4
     has_mode_byte = True
 
-    def __init__(self, dut, bus, image, round_trip_ns=20.0):
+    def __init__(self, dut, bus, image, round_trip_ns=20.0, qe=False):
         super().__init__(dut, bus, dut.cs_flash_n, round_trip_ns, size=32768)
         self.mem[:len(image)] = image[:32768]
+        self.qe = bool(qe)
+
+    def program_qe(self, enabled=True):
+        """Model the non-volatile bring-up setting; ASIC reset does not call this method."""
+        self.qe = bool(enabled)
+
+    def command_allowed(self, command):
+        if command == 0xEB and not self.qe:
+            self.error("EBh rejected because QE is 0")
+            return False
+        return True
 
     def is_read(self, command):
         return True if command == 0xEB else None
@@ -267,8 +339,12 @@ class PsramModel(ChipModel):
     read_wait_periods = 6
     has_mode_byte = False
 
-    def __init__(self, dut, bus, round_trip_ns=20.0):
+    def __init__(self, dut, bus, round_trip_ns=20.0, poison_seed=None):
         super().__init__(dut, bus, dut.cs_ram_n, round_trip_ns, size=32768)
+        if poison_seed is not None:
+            seed = int(poison_seed) & 0xFF
+            for index in range(self.size):
+                self.mem[index] = (seed + 73 * index + (index >> 8)) & 0xFF
 
     def is_read(self, command):
         if command == 0xEB:
@@ -320,6 +396,8 @@ class BusMonitor:
             await Edge(self.dut.sd_out)
             await ReadOnly()
             oe = resolved(self.dut.sd_oe)
+            if resolved(self.dut.rst_n) == 0:
+                continue
             if oe is None:
                 self.errors.append("the lane enable is unresolvable at %.0f ns" % get_sim_time("ns"))
             elif oe == 0:

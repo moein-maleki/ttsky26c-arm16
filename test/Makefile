@@ -4,8 +4,10 @@
 # defaults
 SIM ?= icarus
 FST ?= -fst # Use more efficient FST format
+WAVES ?= 0
+ARM16_NATIVE_CLOCK ?= 1
 TOPLEVEL_LANG ?= verilog
-SRC_DIR = $(PWD)/../src
+SRC_DIR ?= $(abspath $(CURDIR)/../src)
 PROJECT_SOURCES = project.v reset_synchronizer.v arm16_controller.v arm16_datapath.v \
                   instruction_decoder.v condition_checker.v register_file.v barrel_shifter.v alu.v \
                   hazard_detector.v forwarding_selector.v demo_rom.v qspi_master.v vga_renderer.v
@@ -15,10 +17,22 @@ PROJECT_SOURCES = project.v reset_synchronizer.v arm16_controller.v arm16_datapa
 # netlist always carries the real ROM). test_software.py proves src/demo_rom.v matches programs/demo_rom.s.
 ifneq ($(GATES),yes)
 ROMTEST ?= yes
+else
+ifeq ($(ROMTEST),yes)
+$(error ROMTEST=yes cannot replace the ROM in a powered gate netlist)
+endif
+ROMTEST := no
 endif
 ifeq ($(ROMTEST),yes)
 PROJECT_SOURCES := $(filter-out demo_rom.v,$(PROJECT_SOURCES))
-export ROMTEST
+endif
+export ROMTEST ARM16_NATIVE_CLOCK
+
+ifeq ($(ARM16_NATIVE_CLOCK),1)
+COMPILE_ARGS += -DARM16_NATIVE_CLOCK
+endif
+ifeq ($(WAVES),1)
+COMPILE_ARGS += -DARM16_WAVES
 endif
 
 ifneq ($(GATES),yes)
@@ -27,7 +41,7 @@ ifneq ($(GATES),yes)
 SIM_BUILD				= sim_build/rtl
 VERILOG_SOURCES += $(addprefix $(SRC_DIR)/,$(PROJECT_SOURCES))
 ifeq ($(ROMTEST),yes)
-VERILOG_SOURCES += $(PWD)/test_rom.v
+VERILOG_SOURCES += $(CURDIR)/test_rom.v
 SIM_BUILD				= sim_build/romtest
 endif
 
@@ -44,7 +58,7 @@ VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitiv
 VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
 
 # this gets copied in by the GDS action workflow
-VERILOG_SOURCES += $(PWD)/gate_level_netlist.v
+VERILOG_SOURCES += $(CURDIR)/gate_level_netlist.v
 
 endif
 
@@ -54,11 +68,11 @@ export GATES
 COMPILE_ARGS 		+= -I$(SRC_DIR)
 
 # Include the testbench sources:
-VERILOG_SOURCES += $(PWD)/tb.v
+VERILOG_SOURCES += $(CURDIR)/tb.v $(CURDIR)/video_monitor.v $(CURDIR)/video_monitor_probe.v
 TOPLEVEL = tb
 
 # List test modules to run, separated by commas and without the .py suffix:
-COCOTB_TEST_MODULES = test
+COCOTB_TEST_MODULES = test,test_boot_video,test_qspi_model
 
 # include cocotb's make rules to take care of the simulator setup
 include $(shell cocotb-config --makefiles)/Makefile.sim

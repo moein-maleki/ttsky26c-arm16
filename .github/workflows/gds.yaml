@@ -28,14 +28,57 @@ jobs:
   gl_test:
     needs: gds
     runs-on: ubuntu-24.04
+    timeout-minutes: 120
     steps:
       - name: checkout repo
         uses: actions/checkout@v6
         with:
           submodules: recursive
 
-      - name: GL test
-        uses: TinyTapeout/tt-gds-action/gl_test@ttsky26c
+      - name: Download the generated submission
+        uses: actions/download-artifact@v7
+        with:
+          name: tt_submission
+          path: artifacts/submission
+
+      - name: Authenticate the netlist source and PDK
+        run: |
+          jq -e --arg sha "$GITHUB_SHA" --arg run "$GITHUB_RUN_ID" \
+            '.commit == $sha and (.workflow_url | endswith("/actions/runs/" + $run))' \
+            artifacts/submission/tt_submission/commit_id.json
+          jq -e '.PDK == "sky130A" and .PDK_SOURCE == "open_pdks" and \
+            .PDK_VERSION == "8afc8346a57fe1ab7934ba5a6056ea8b43078e71"' \
+            artifacts/submission/tt_submission/pdk.json
+          printf 'PDK_ROOT=/home/runner/pdk\n' >> "$GITHUB_ENV"
+
+      - name: Install the pinned PDK
+        uses: TinyTapeout/ciel-action@v1
+        with:
+          pdk_name: sky130A
+          pdk_version: 8afc8346a57fe1ab7934ba5a6056ea8b43078e71
+          pdk_root: /home/runner/pdk
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install simulation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y iverilog
+          python -m pip install -r test/requirements.txt
+
+      - name: Verify the complete gate profile
+        run: |
+          python scripts/run_verification.py gate --output artifacts/gate \
+            --netlist artifacts/submission/tt_submission/tt_um_moein_maleki_arm16.v
+
+      - name: Save gate evidence
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: gatelevel_test_results
+          path: artifacts/gate/
 
   viewer:
     needs: gds

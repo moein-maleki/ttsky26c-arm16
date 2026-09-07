@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fail a hardening run when its signoff evidence is incomplete or dirty.
 
-Usage: check_signoff.py [run_dir] [expected_top]
+Usage: check_signoff.py [run_dir] [expected_top] [source_root]
 Exit status: zero only when all required gates pass.
 """
 
@@ -12,6 +12,7 @@ import sys
 
 
 RUN = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "runs/wokwi")
+SOURCE_ROOT = pathlib.Path(sys.argv[3]) if len(sys.argv) > 3 else pathlib.Path.cwd()
 EXPECTED_TIMING_CORNERS = frozenset(
     {
         "max_ff_n40C_1v95",
@@ -29,19 +30,20 @@ EXPECTED_TIMING_CORNERS = frozenset(
 
 def read_info_top() -> str | None:
     try:
-        text = pathlib.Path("info.yaml").read_text(encoding="utf-8")
+        text = (SOURCE_ROOT / "info.yaml").read_text(encoding="utf-8")
     except OSError:
         return None
     match = re.search(r"(?m)^\s*top_module:\s*[\"']?([^\"'#\s]+)", text)
     return match.group(1) if match else None
 
 
-def read_user_config_top() -> str | None:
-    path = pathlib.Path("src/user_config.json")
-    try:
-        return json.loads(path.read_text(encoding="utf-8")).get("DESIGN_NAME")
-    except (OSError, json.JSONDecodeError):
-        return None
+def netlist_modules(paths: list[pathlib.Path]) -> set[str]:
+    modules: set[str] = set()
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        text = re.sub(r"/\*.*?\*/|//[^\n]*", "", text, flags=re.S)
+        modules.update(re.findall(r"\bmodule\s+([A-Za-z_][A-Za-z_0-9$]*)", text))
+    return modules
 
 
 def main() -> int:
@@ -67,9 +69,10 @@ def main() -> int:
     print("=== IDENTITY ===")
     info_top = read_info_top()
     expected_top = sys.argv[2] if len(sys.argv) > 2 else info_top
-    built_top = metrics.get("design__name") or metrics.get("DESIGN_NAME")
-    if built_top is None:
-        built_top = read_user_config_top()
+    netlists = list(RUN.glob("final/pnl/*.pnl.v")) + list(RUN.glob("final/nl/*.nl.v"))
+    modules = netlist_modules(netlists)
+    built_top = expected_top if expected_top in modules else (next(iter(modules)) if len(modules) == 1 else None)
+    reported_top = metrics.get("design__name") or metrics.get("DESIGN_NAME")
 
     gate(info_top is not None, "info.yaml top module", str(info_top))
     gate(expected_top is not None, "expected top module", str(expected_top))
@@ -80,6 +83,9 @@ def main() -> int:
             f"expected '{expected_top}', info.yaml says '{info_top}'",
         )
     gate(built_top is not None, "built design identity", str(built_top))
+    if reported_top is not None:
+        gate(reported_top == built_top, "metrics identity matches netlist",
+             f"metrics '{reported_top}', netlist '{built_top}'")
     if built_top is not None and expected_top is not None:
         gate(
             built_top == expected_top,
@@ -173,9 +179,6 @@ def main() -> int:
     print(f"         cells / DFFs                      {cells} / {dffs}")
 
     print("=== CELL CHOICE ===")
-    netlists = list(RUN.glob("final/pnl/*.pnl.v")) + list(
-        RUN.glob("final/nl/*.nl.v")
-    )
     gate(bool(netlists), "final netlist exists", str(netlists[0] if netlists else None))
     if netlists:
         text = netlists[0].read_text(encoding="utf-8")

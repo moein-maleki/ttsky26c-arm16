@@ -1,7 +1,9 @@
 # arm16 design specification
 
-> Version 0.4, 2026-09-06. Status: implemented; this version records the decisions taken while the RTL was
-> written (section 19). Change from 0.3: the sampling rule is stated from the falling edge (3.3, 12), the
+> Version 0.5, 2026-09-07. This version corrects the sampling overlap claim and defines the executable
+> verification requirements in section 14. The implemented hardware decisions remain in section 19.
+> Version 0.4 recorded the decisions taken while the RTL was written.
+> Change from 0.3: the sampling rule is stated from the falling edge (3.3, 12), the
 > status register writes on the rising edge with a bypass into decode (3.2), the shifter carry and the
 > special shift encodings are excluded (3.1), the UART is dropped by the area rule (3.4, 11), METER counts
 > in units of 16 (3.4), the ROM repeats every 64 bytes (3.5), the restart address is always the fetch
@@ -367,13 +369,23 @@ design is re-synthesized after each one. A feature that breaks the cap is droppe
   edge: 31 ns of setup margin and 41 ns of hold margin at a 20 ns round trip. QSPI_DLY = 3 captures at
   100 ns and has 1.5 ns of hold margin at 20 ns (it is the setting for round trips above about 25 ns);
   QSPI_DLY = 1 captures at 20 ns and works only below an 11 ns round trip. Static timing analysis cannot
-  prove this window (the data path is asynchronous to the core clock); the delay-sweep simulation and
+  prove this window with the current constraints; the delay-sweep simulation and
   the bring-up strap sweep are the evidence.
 - Timing constraints follow TinyQV: 65% of the period is budgeted to input and output delay on the Pmod
   pins, 20% on the memory clock pin, and 2.5 ns of extra clock uncertainty for the multiplexer.
 - The register file writes on the falling edge; that path gets half a period. The status register writes
   on the rising edge (v0.4).
 - The board clock stays at 25 MHz because of the video timing, even if hardening closes higher.
+
+The tested sampling settings are below. Setting 2 is the nominal setting over the complete sampled
+0 to 40 ns round-trip range. Two settings work at 0 to 10 ns and at 20 to 40 ns. At 15 ns only setting 2
+works. The earlier statement that two settings work on every board was too broad.
+
+| Round trip, ns | Setting 1 | Setting 2 | Setting 3 |
+|---|---|---|---|
+| 0, 5, 10 | Pass | Pass | Fail |
+| 15 | Fail | Pass | Fail |
+| 20, 25, 30, 35, 40 | Fail | Pass | Pass |
 
 ## 13. Expected performance
 
@@ -402,22 +414,33 @@ The chip is done when every item below passes.
 
 1. A golden model exists: a Python simulator of the instruction subset, written from the ARM architecture
    definition and not from the RTL, with the address map and the peripherals.
-2. An assembler exists: `arm-none-eabi-as` for real programs, and a Python encoder for the subset that is
-   checked byte for byte against it.
+2. The Python encoder is checked byte for byte against `arm-none-eabi-as`. CI installs GNU ARM binutils
+   and runs the complete software suite. The external comparison must pass; a skip does not pass this gate.
 3. Behavioural models exist for the W25Q128JV flash (EBh, mode byte, address auto-increment, quad-enable
    state) and the APS6404L PSRAM (EBh, 38h, chip-select-low time limit, chip-select-high gap), written
-   from the datasheets.
+   from the datasheets. The flash model has explicit QE state. Tests keep the same models alive while
+   processor reset interrupts command, address, mode, read and partial-write phases. They check retained
+   QE and PSRAM data, idle pins, reboot at address zero, and rejection of stale delayed bus drivers.
 4. cocotb tests pass at RTL: one directed test per instruction class with flag checks; the five lab
    regressions re-encoded; random programs compared against the golden model at the end of execution;
-   UART loopback; the ROM boot; the hardware view; a VGA sync-timing check; a frame-capture test that renders one frame to
+   the real ROM boot and forwarding rate; the hardware view; a VGA sync-timing check; a frame-capture test that renders one frame to
    an image and compares it; the demo program drawing on the screen end to end; the memory model counting
    exactly one bus transaction per load or store against the golden model; the mux round trip swept 0 to
-   40 ns across the three strap settings with at least two settings passing to 30 ns; one deliberately
-   failing negative test so the suite is known to see.
+   40 ns across all three settings with the exact table in section 12, including the 15 ns point;
+   negative controls for register mismatch, byte corruption, reordered instructions, early sync and a
+   dead ROM. Each negative control must reject its named fault; an unrelated exception is a test failure.
+   Random campaigns must execute a positive count, and all event waits have a finite deadline.
 5. Hardening closes at 25 MHz with zero setup, hold, DRC, LVS and antenna failures across the nine corners,
    per the `ttsky26c-hardening-guardrails` note, and the metrics are snapshotted.
-6. The same cocotb tests pass on the powered gate-level netlist.
-7. The TinyTapeout CI test, docs and GDS workflows are green on the pushed repository.
+6. Every directed instruction program and lab regression also runs through the flash and PSRAM pins on
+   the powered netlist. The real, unchanged demo ROM must display a nonzero count with forwarding on
+   and off; its visible retirement meter must show the expected rate difference. Exact video sync and
+   memory-model reset tests run on both RTL and gates. Tests that inspect hierarchy or load the writable
+   test ROM remain in the RTL profile; their gate counterparts use pins and the shipped ROM. These
+   capability differences are explicit in `test/coverage.json`. An unexpected skip fails the gate.
+7. The test, docs and GDS workflows pass on the pushed revision. Software, writable-ROM RTL, shipped-ROM
+   RTL, dead-ROM negative control and powered-gate profiles are required. Each run requires process exit
+   zero, nonempty result XML, every named acceptance test, and unchanged private test inputs.
 
 ## 15. Programming tools
 
@@ -497,5 +520,5 @@ Each item changed the RTL from the letter of v0.3; the reason is measured or rev
    71.7%.
 9. The UART is dropped (section 11 drop order); the meter stays and counts in units of 16.
 10. The demo ROM program (test/programs/demo_rom.s) counts the wraps of a 16-bit loop counter into
-    VGA_VAL: with forwarding on the display advances about 27 times per second, with forwarding off
-    about 2.3 times slower.
+    VGA_VAL: at 25 MHz the loop gives about 29.34 increments per second with forwarding and 13.15
+    without. The visible retirement meter has a ratio of about 2.23 between these settings.

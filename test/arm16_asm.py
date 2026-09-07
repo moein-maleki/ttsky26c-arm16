@@ -321,14 +321,22 @@ def epilogue(base=0x9F00):
         "ORRCS r0, r0, #2",
         "ORRVS r0, r0, #1",
         "STR r0, [r12, #%d]" % flags_off,
-        "MOV r0, #0xCE",
-        "STR r0, [r12, #%d]" % done_off,
-        "B .",
     ]
+    # Save readable display state after the register dump. These instructions preserve NZCV.
+    for index, offset in enumerate((0, 0x10, 0x12), start=16):
+        lines.extend([
+            "MOV r0, #0xFF00",
+            "LDR r0, [r0, #%d]" % offset,
+            "STR r0, [r12, #%d]" % (2 * index),
+        ])
+    lines.extend(["MOV r0, #0xCE", "STR r0, [r12, #%d]" % done_off, "B ."])
     return "\n".join(lines)
 
 
-EPILOGUE_LAYOUT = {"regs": list(range(12)) + [13, 14], "flags_slot": 14, "done_slot": 15, "done_value": 0xCE}
+EPILOGUE_LAYOUT = {
+    "regs": list(range(12)) + [13, 14], "flags_slot": 14, "done_slot": 15, "done_value": 0xCE,
+    "peripherals": {"VGA_VAL": 16, "VGA_FG": 17, "VGA_BG": 18}, "stores": 19,
+}
 
 
 # ----------------------------------------------------------------------------------------------

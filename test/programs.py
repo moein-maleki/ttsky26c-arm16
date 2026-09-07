@@ -89,8 +89,8 @@ DIRECTED = {
         MOV r4, #5
     done:
         ADD r6, r15, #4          ; pc + 12
-        MOV r7, #0x48
-        ADD pc, r7, #0           ; a data-processing write to r15: branch to the B . at 0x48
+        MOV r7, pc              ; the next-but-one instruction, at any program origin
+        ADD pc, r7, #0           ; a data-processing write to r15: branch to the final B .
         B .
     """,
     "conditions": """
@@ -366,4 +366,15 @@ def random_program(seed, length=30, loop=False, psram=False):
         lines.append("SUBS r13, r13, #1")
         lines.append("BNE LOOPTOP")
     lines.append("B .")
+    return "\n".join(lines)
+
+
+def ordered_stream(length, start=1):
+    """Alternating ADD and EOR make the first adjacent swap observable in the final state."""
+    if length < 2:
+        raise ValueError("an ordered stream needs at least two operations")
+    lines = [f"MOV r0, #{start}"]
+    for value in range(1, length + 1):
+        op = "ADD" if value % 2 else "EOR"
+        lines.append(f"{op} r0, r0, #{value}")
     return "\n".join(lines)

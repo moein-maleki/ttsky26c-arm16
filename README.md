@@ -10,9 +10,10 @@ internal demo ROM runs with nothing on the memory socket. The UART of the first 
 |---|---|
 | Target | TinyTapeout TTSKY26c, sky130A, 2x2 tile, 25 MHz |
 | Status | **submitted** (spec -> rtl -> sim-clean -> hardened -> submitted): Tiny Tapeout SKY 26c, 2026-09-06, commit `42ba458`, [gds run 34044878215](https://github.com/moein-maleki/ttsky26c-arm16/actions/runs/34044878215) |
-| Specification | `docs/spec.md` (v0.4; section 19 records the implementation decisions) |
-| Results | 74.99% of the 2x2 tile placed, setup slack +6.87 ns and hold +0.108 ns at 25 MHz over nine corners, DRC, LVS and antenna clean, precheck 15 of 15; 44 pytest, 52 cocotb tests (51 pass, 1 skip), 11 of 11 runnable tests pass on the hardened netlist |
-| Report | `scratch_pad/2026-09-06_sep/02_rtl_sprint/REPORT.md` |
+| Specification | `docs/spec.md` (v0.5; section 14 defines the verification gates, section 19 records the hardware decisions) |
+| Physical result | 74.99% of the 2x2 tile placed, setup slack +6.87 ns and hold +0.108 ns at 25 MHz over nine corners, DRC, LVS and antenna clean, precheck 15 of 15 |
+| Test coverage | 106 software checks; 55 writable-ROM and 49 shipped-ROM checks; a separate dead-ROM negative control. Gate CI requires every directed flash program, the real-ROM output and forwarding proof, video timing and memory-reset cases. Expected skips are explicit in `test/coverage.json`. |
+| Verification | `test/README.md`: software, writable-ROM RTL, shipped-ROM RTL, dead-ROM control and powered-gate profiles |
 | Toolchain | LibreLane 3.0.3, sky130A `8afc834`, oss-cad-suite (iverilog, cocotb 2.x, yosys), see `../../toolchain/tinytapeout.md` |
 | Origin | `sandbox/computer-architecture-lab` (University of Tehran architecture lab, 2022), narrowed to 16 bits |
 | Silicon | chips projected 2027-03-27; GDS viewer at https://moein-maleki.github.io/ttsky26c-arm16/ |

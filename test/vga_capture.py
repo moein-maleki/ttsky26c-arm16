@@ -56,3 +56,65 @@ def write_ppm(path, frame, rows):
                 r, g, b = (c >> 4) & 3, (c >> 2) & 3, c & 3
                 line.append("%d %d %d" % (r * 85, g * 85, b * 85))
             f.write(" ".join(line) + "\n")
+
+
+class VideoTimingError(AssertionError):
+    """The pin observer found an invalid sync level, bus state, or incomplete sample."""
+
+
+class VisibleProgressError(AssertionError):
+    """The displayed count did not reach its required nonzero value."""
+
+
+def decode_segment_pixels(packed, fg=0x3F, bg=0):
+    """Decode 28 observed segment centres, six colour bits each, into four hex digits."""
+    value = 0
+    for digit in range(4):
+        mask = 0
+        for segment in range(7):
+            colour = (packed >> (6 * (7 * digit + segment))) & 0x3F
+            if colour == fg:
+                mask |= 1 << segment
+            elif colour != bg:
+                raise VideoTimingError('unexpected segment colour 0x%02X at digit %d segment %d' %
+                                       (colour, digit, segment))
+        if mask not in SEGMENTS:
+            raise VideoTimingError('invalid segment mask 0x%02X at digit %d' % (mask, digit))
+        value = (value << 4) | SEGMENTS.index(mask)
+    return value
+
+
+def check_pin_monitor(dut):
+    errors = int(dut.video_errors.value)
+    if errors:
+        raise VideoTimingError('pin observer error mask 0x%X at sample %d' %
+                               (errors, int(dut.video_first_error_sample.value)))
+
+
+async def capture_monitor_frame(dut, frame, timeout_ns=120_000_000):
+    """Wait for one compiled pin capture. There is no Python callback on each pixel clock."""
+    from cocotb.triggers import Edge, Timer, with_timeout
+    from cocotb.utils import get_sim_time
+    deadline = get_sim_time('ns') + timeout_ns
+    while True:
+        check_pin_monitor(dut)
+        sequence = int(dut.video_capture_sequence.value)
+        observed_frame = int(dut.video_capture_frame.value)
+        if sequence and observed_frame >= frame:
+            if observed_frame != frame:
+                raise VideoTimingError('missed frame %d; last capture was %d' % (frame, observed_frame))
+            value = decode_segment_pixels(int(dut.video_captured_pixels.value))
+            dut._log.info('PIN CAPTURE frame=%d value=%04X samples=%d', frame, value,
+                          int(dut.video_sample_count.value))
+            return value
+        remaining = deadline - get_sim_time('ns')
+        if remaining <= 0:
+            raise VideoTimingError('no pin capture for frame %d before timeout' % frame)
+        await with_timeout(Edge(dut.video_capture_sequence), remaining, 'ns')
+        await Timer(1, unit='ns')
+
+
+def require_visible_count(got, expected):
+    if got != expected or expected <= 0:
+        raise VisibleProgressError('visible ROM count: got %04X, expected nonzero %04X' %
+                                   (got, expected))

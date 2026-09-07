@@ -49,7 +49,7 @@ def make_project(
     metrics: dict[str, object] | None = None,
     info_top: str | None = EXPECTED_TOP,
     user_top: str | None = EXPECTED_TOP,
-    netlist_text: str = "module clean; endmodule\n",
+    netlist_text: str = f"module {EXPECTED_TOP}; endmodule\n",
     create_netlist: bool = True,
 ) -> tuple[Path, Path]:
     project = tmp_path
@@ -105,6 +105,7 @@ def test_missing_identity_fails(tmp_path: Path) -> None:
         tmp_path / "missing_build",
         metrics=metrics,
         user_top=None,
+        netlist_text="module unknown_design; endmodule\n",
     )
     assert run_checker(project, run_dir).returncode != 0
 
@@ -117,6 +118,19 @@ def test_wrong_identity_fails(tmp_path: Path) -> None:
         metrics=metrics,
         user_top="tt_um_wrong_design",
     )
+    assert run_checker(project, run_dir).returncode != 0
+
+
+def test_netlist_identity_does_not_require_generated_config(tmp_path: Path) -> None:
+    metrics = clean_metrics()
+    metrics.pop("design__name")
+    project, run_dir = make_project(tmp_path, metrics=metrics, user_top=None)
+    result = run_checker(project, run_dir)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_generated_config_cannot_hide_wrong_netlist(tmp_path: Path) -> None:
+    project, run_dir = make_project(tmp_path, netlist_text="module wrong_design; endmodule\n")
     assert run_checker(project, run_dir).returncode != 0
 
 
