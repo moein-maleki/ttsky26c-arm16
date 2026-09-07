@@ -46,7 +46,7 @@ jobs:
           jq -e --arg sha "$GITHUB_SHA" --arg run "$GITHUB_RUN_ID" \
             '.commit == $sha and (.workflow_url | endswith("/actions/runs/" + $run))' \
             artifacts/submission/tt_submission/commit_id.json
-          jq -e '.PDK == "sky130A" and .PDK_SOURCE == "open_pdks" and \
+          jq -e '.PDK == "sky130A" and .PDK_SOURCE == "open_pdks" and
             .PDK_VERSION == "8afc8346a57fe1ab7934ba5a6056ea8b43078e71"' \
             artifacts/submission/tt_submission/pdk.json
           printf 'PDK_ROOT=/home/runner/pdk\n' >> "$GITHUB_ENV"
